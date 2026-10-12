@@ -436,12 +436,6 @@ const TOPICS=[
 {id:"t51",title:"Jira",desc:"Agile workflows, sprints, estimation, tracking."},
 {id:"t59",title:"Java for AEM Development",desc:"Core Java concepts used in Sling Models, OSGi, servlets."},
 {id:"t52",title:"AEM Best Practices",desc:"Coding standards, performance, security, testing."},
-{id:"t53",title:"Flashcard Rapid-Fire",desc:"Timed recall practice across all topics."},
-{id:"t54",title:"Troubleshooting Scenarios",desc:"Debug production issues step-by-step."},
-{id:"t55",title:"Code Output Challenges",desc:"Predict what code does — spot bugs, trace output."},
-{id:"t56",title:"AEMaaCS vs AEM 6.5",desc:"Key differences, migration, cloud-native patterns."},
-{id:"t57",title:"Project Story Bank",desc:"Pre-prepared STAR stories for behavioral questions."},
-{id:"t58",title:"Live Coding Patterns",desc:"Write servlets, models, configs from scratch."},
 {id:"t60",title:"CI/CD Pipeline in AEM",desc:"Cloud Manager pipelines, stages, quality gates, deployment strategies."},
 {id:"t61",title:"AEM Cloud Migration",desc:"On-premise to AEMaaCS migration phases, tools, code refactoring."},
 {id:"t62",title:"AEM Forms",desc:"Creating, managing, and processing digital forms in AEM."},
@@ -450,7 +444,13 @@ const TOPICS=[
 {id:"t65",title:"AI for AEM Development",desc:"AI-assisted development, GenAI content, intelligent automation in AEM."},
 {id:"t66",title:"Granite / Coral UI",desc:"AEM authoring frameworks, Granite UI fields, Coral components."},
 {id:"t67",title:"ClientLibs",desc:"Client libraries, CSS/JS management, categories, dependencies, embedding."},
-{id:"t68",title:"Scenario-Based Questions",desc:"74 high-level architecture, troubleshooting, and leadership scenarios for senior AEM interviews."}
+{id:"t68",title:"Scenario-Based Questions",desc:"74 high-level architecture, troubleshooting, and leadership scenarios for senior AEM interviews."},
+{id:"t53",title:"Flashcard Rapid-Fire",desc:"Timed recall practice across all topics."},
+{id:"t54",title:"Troubleshooting Scenarios",desc:"Debug production issues step-by-step."},
+{id:"t55",title:"Code Output Challenges",desc:"Predict what code does — spot bugs, trace output."},
+{id:"t56",title:"AEMaaCS vs AEM 6.5",desc:"Key differences, migration, cloud-native patterns."},
+{id:"t57",title:"Project Story Bank",desc:"Pre-prepared STAR stories for behavioral questions."},
+{id:"t58",title:"Live Coding Patterns",desc:"Write servlets, models, configs from scratch."}
 ];
 
 const INTERVIEW_QA={
@@ -9597,7 +9597,25 @@ var flashcards=[
 {topic:'DAM',q:'What happens when you upload an asset to AEM DAM?',a:'DAM Asset workflow triggers: extracts metadata, generates renditions (thumbnails, web-optimized), creates sub-assets (for PDFs/videos), runs custom workflow steps. Renditions stored as child nodes under the asset.'},
 {topic:'Architecture',q:'What is the JCR and why does AEM use it?',a:'Java Content Repository — a hierarchical content store (tree of nodes with properties). AEM uses it because content is naturally hierarchical (sites/pages/components), supports versioning, access control, observation, and search natively.'},
 {topic:'OSGi',q:'How do you create an OSGi configuration in AEM?',a:'1) Define @ObjectClassDefinition interface with @AttributeDefinition fields. 2) Use @Designate(ocd=...) on your component. 3) Place .cfg.json file in ui.config under /apps/mysite/osgiconfig/config.<runmode>/.'},
-{topic:'Security',q:'What is CSRF protection in AEM and when do you need it?',a:'Cross-Site Request Forgery protection. Required for all POST/PUT/DELETE requests. AEM provides a CSRF token endpoint at /libs/granite/csrf/token.json. Include the token as a header or parameter in AJAX calls.'}
+{topic:'Security',q:'What is CSRF protection in AEM and when do you need it?',a:'Cross-Site Request Forgery protection. Required for all POST/PUT/DELETE requests. AEM provides a CSRF token endpoint at /libs/granite/csrf/token.json. Include the token as a header or parameter in AJAX calls.'},
+{topic:'Edge Delivery',q:'What is Edge Delivery Services and how does authoring work?',a:'Adobe\'s performance-first delivery — authors create content in Google Docs or Microsoft Word (not AEM Touch UI). A GitHub pipeline converts documents to optimized HTML served from a global CDN. Typical Lighthouse score: 100/100.'},
+{topic:'Edge Delivery',q:'What are Blocks in EDS?',a:'EDS equivalent of AEM components. Authors create them as tables in Google Docs — first row is the block name (e.g., "Hero"), subsequent rows contain content. Each block has JS/CSS in a GitHub repo folder, auto-loaded and rendered client-side.'},
+{topic:'Core Web Vitals',q:'What are the 3 Core Web Vitals and their thresholds?',a:'LCP (Largest Contentful Paint) < 2.5s — loading speed. INP (Interaction to Next Paint) < 200ms — interactivity. CLS (Cumulative Layout Shift) < 0.1 — visual stability. All directly affect Google search rankings.'},
+{topic:'Core Web Vitals',q:'How does Dispatcher improve Core Web Vitals?',a:'Dispatcher dramatically improves TTFB (Time to First Byte) and LCP by serving cached static files directly from Apache — reducing response time from 200-500ms to 10-30ms. Higher cache hit ratio = better LCP.'},
+{topic:'AI for AEM',q:'What is Adobe Sensei and what does it do in AEM?',a:'Adobe\'s AI/ML framework. In AEM: Smart Tags (auto-categorize DAM assets), Smart Crop (AI crop points for responsive images), Content Recommendations (user behavior-based), Auto-Translation, and Predictive Analytics.'},
+{topic:'AI for AEM',q:'What is Adobe Firefly?',a:'Adobe\'s generative AI for creative content. In AEM: generate images from text prompts, text effects, generative fill (extend/modify images), and content variations for A/B testing. Available in AEM Cloud Service.'},
+{topic:'Granite UI',q:'What is the difference between Granite UI and Coral UI?',a:'Granite UI = server-side framework (JCR nodes defining dialog structure, rendered as HTML). Coral UI = client-side library (Web Components for interactive widgets — dropdowns, modals, date pickers). AEM 6.5 uses Coral UI 3.'},
+{topic:'Granite UI',q:'Name the most common Granite UI field types.',a:'textfield, textarea, pathfield (path browser), checkbox, select (dropdown), datepicker, colorfield, fileupload, richtext (RTE), multifield (repeatable groups). All under granite/ui/components/coral/foundation/form/.'},
+{topic:'ClientLibs',q:'What is allowProxy and why is it critical?',a:'Setting allowProxy=true enables ClientLib to be served via /etc.clientlibs/ instead of raw /apps/ path. Without it, Dispatcher blocks /apps/ requests and CSS/JS returns 404 on Publish. Always set allowProxy=true.'},
+{topic:'ClientLibs',q:'What is the difference between ClientLib dependencies and embed?',a:'Dependencies = separate HTTP requests, guaranteed load order. Embed = inlined into this ClientLib, single HTTP request, reduces network calls. Use dependencies for order, embed for combining/reducing requests.'},
+{topic:'ClientLibs',q:'How do you debug ClientLib issues?',a:'/libs/granite/ui/content/dumplibs.html lists all registered ClientLibs. Append ?debugClientLibs=true to URL for unminified files. Rebuild cache at /libs/granite/ui/content/dumplibs.rebuild.html.'},
+{topic:'Cloud',q:'What is Sling Content Distribution and how does it replace replication?',a:'In AEMaaCS, Sling Content Distribution replaces traditional replication agents. It\'s queue-based, eventually consistent, managed by Adobe. No manual agent config. Same Replicator API works. Uses the Golden Master pattern.'},
+{topic:'Cloud',q:'What code changes are needed for AEMaaCS migration?',a:'1) Convert OSGi configs to .cfg.json only. 2) Remove custom run modes. 3) Replace admin session with service users. 4) Move /etc content to /conf. 5) Make /apps immutable. 6) Update Oak indexes to code-deployable format.'},
+{topic:'Scenarios',q:'A page works on Publish but fails through Dispatcher. What do you check first?',a:'Dispatcher /filter rules — a deny rule is likely blocking the URL pattern. Check dispatcher.log for which rule denied the request. Remember: last matching filter rule wins.'},
+{topic:'Scenarios',q:'Content is activated but users still see old content. Most likely cause?',a:'CDN cache was not purged. Dispatcher invalidation does NOT automatically purge CDN. You need a CDN purge API call on content activation. Implement a custom Replication Transport Handler or CDN purge webhook.'},
+{topic:'Scenarios',q:'AEM Publish CPU hits 100% after a release. What do you do first?',a:'Take 3 thread dumps 10 seconds apart using jstack. Look for threads stuck in the same method — that reveals the bottleneck (traversal query, infinite loop, regex backtracking). Never restart without diagnosis first.'},
+{topic:'Forms',q:'What are the 3 types of AEM Forms?',a:'Adaptive Forms (responsive, dynamic, recommended), Foundation Forms (basic HTML, simple use cases), XFA Forms (PDF-based, complex layouts, legacy banking/insurance). Always use Adaptive Forms for new development.'},
+{topic:'Forms',q:'What is a Form Data Model (FDM)?',a:'Connects forms to external data sources — RESTful APIs, SOAP, JDBC, OData. Provides: data binding (form fields → data source), pre-fill (populate with existing data), submit (write back). The integration layer between form UI and backend.'}
 ];
 var selectedTopics=new Set();var deck=[];var current=0;var scores={know:0,kinda:0,nope:0};var streak=0;var maxStreak=0;var timerStart=0;var timerInterval=null;var results=[];
 var allTopics=[...new Set(flashcards.map(function(f){return f.topic;}))];
