@@ -7516,7 +7516,7 @@ NOTES.t53=`
 <div class="fc-setup" id="fcSetup">
 <div class="fc-setup-text">Select topics to practice (or leave all selected for full mix):</div>
 <div class="fc-topic-select" id="fcTopicSelect"></div>
-<button class="fc-start-btn" id="fcStartBtn">Start (20 cards)</button>
+<button class="fc-start-btn" id="fcStartBtn">Start (30 cards)</button>
 </div>
 <div class="fc-card-area" id="fcCardArea">
 <div class="fc-timer" id="fcTimer">0.0s</div>
@@ -9625,7 +9625,7 @@ function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.rand
 function startSession(){
 var pool=flashcards.filter(function(f){return selectedTopics.has(f.topic);});
 if(!pool.length){alert('Select at least one topic');return;}
-deck=shuffle(pool.slice()).slice(0,20);current=0;scores={know:0,kinda:0,nope:0};streak=0;maxStreak=0;results=[];
+deck=shuffle(pool.slice()).slice(0,30);current=0;scores={know:0,kinda:0,nope:0};streak=0;maxStreak=0;results=[];
 document.getElementById('fcSetup').style.display='none';
 document.getElementById('fcSummary').style.display='none';
 document.getElementById('fcCardArea').style.display='block';
