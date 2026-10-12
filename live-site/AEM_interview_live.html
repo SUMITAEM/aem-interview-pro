@@ -8838,8 +8838,9 @@ function qKey(t,i){return t+'-'+i;}
 let currentMode='topic';
 
 // ========== FREE / PRO TIER ==========
+if(typeof IS_ADMIN==='undefined')var IS_ADMIN=false;
+if(typeof userPlan==='undefined')var userPlan='free';
 var FREE_TOPICS=['t1','t2','t3','t4','t5','t6','t27','t26','t28','t30','t11','t14','t16','t12','t52'];
-var userPlan='free';
 function isProUser(){return userPlan==='pro'||IS_ADMIN;}
 function isFreeTopic(tid){return FREE_TOPICS.indexOf(tid)!==-1;}
 function isTopicLocked(tid){return !isFreeTopic(tid)&&!isProUser();}
