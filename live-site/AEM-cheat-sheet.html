@@ -1,0 +1,2850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AEM Interview Cheat Sheet — 25 Topics + 30 Flashcards covering Architecture, OSGi, Sling, JCR, Components, HTL, Templates, DAM, AEMaaCS, Dispatcher, Security, Performance, and more.">
+<meta name="author" content="Sumit Gaidhani">
+<title>AEM Interview Cheat Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('aem-cheat-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.setAttribute('data-theme', 'light');
+  } catch(e) {}
+})();
+</script>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --ink: #1e293b;
+  --ink-soft: #64748b;
+  --line: #e2e8f0;
+  --accent: #0891b2;
+  --accent-light: #ecfeff;
+  --accent-dark: #0e7490;
+  --accent-ink: #ffffff;
+  --code-bg: #1e293b;
+  --code-ink: #e2e8f0;
+  --highlight-bg: #f0fdfa;
+  --highlight-border: #0891b2;
+  --radius: 8px;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+  --body: 'Inter', system-ui, -apple-system, sans-serif;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --border-teal: #0891b2;
+  --border-blue: #2563eb;
+  --border-purple: #7c3aed;
+  --border-orange: #ea580c;
+  --border-green: #059669;
+  --progress-bg: #e2e8f0;
+  --flip-bg: #ffffff;
+  --flip-front: #0891b2;
+  --flip-back: #0e7490;
+}
+
+/* ===== DARK THEME ===== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1120;
+    --panel: #151f30;
+    --ink: #e2e8f0;
+    --ink-soft: #94a3b8;
+    --line: #1e293b;
+    --accent: #22d3ee;
+    --accent-light: #0c2a30;
+    --accent-dark: #06b6d4;
+    --accent-ink: #0b1120;
+    --code-bg: #020617;
+    --code-ink: #e2e8f0;
+    --highlight-bg: #0c2a30;
+    --highlight-border: #22d3ee;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --progress-bg: #1e293b;
+    --flip-bg: #151f30;
+    --flip-front: #22d3ee;
+    --flip-back: #06b6d4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1120;
+  --panel: #151f30;
+  --ink: #e2e8f0;
+  --ink-soft: #94a3b8;
+  --line: #1e293b;
+  --accent: #22d3ee;
+  --accent-light: #0c2a30;
+  --accent-dark: #06b6d4;
+  --accent-ink: #0b1120;
+  --code-bg: #020617;
+  --code-ink: #e2e8f0;
+  --highlight-bg: #0c2a30;
+  --highlight-border: #22d3ee;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --progress-bg: #1e293b;
+  --flip-bg: #151f30;
+  --flip-front: #22d3ee;
+  --flip-back: #06b6d4;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 160px; }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  height: 4px;
+  background: var(--progress-bg);
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+  transition: width 0.3s ease;
+  border-radius: 0 2px 2px 0;
+}
+.progress-text {
+  position: fixed;
+  top: 6px;
+  left: 16px;
+  z-index: 1100;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-soft);
+  background: var(--panel);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.progress-text.visible { opacity: 1; }
+
+/* ===== THEME TOGGLE ===== */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1200;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+/* ===== SCROLL TO TOP ===== */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+.scroll-top-btn.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.scroll-top-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ===== PAGE WRAPPER ===== */
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px 80px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 48px 0 32px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0;
+}
+.header-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  margin: 0 auto 16px;
+  display: block;
+  background: rgba(8,145,178,0.08);
+  padding: 3px;
+  animation: logoGlow 3s ease-in-out infinite, logoFloat 4s ease-in-out infinite, logoPulse 6s ease-in-out infinite;
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+.header-logo:hover {
+  transform: scale(1.1) rotate(5deg);
+  animation-play-state: paused;
+}
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(8,145,178,0.4), 0 0 20px rgba(8,145,178,0.1); }
+  50% { box-shadow: 0 0 16px rgba(8,145,178,0.8), 0 0 40px rgba(8,145,178,0.3); }
+}
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.header .eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #d97706;
+  margin-bottom: 6px;
+}
+.header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  background: linear-gradient(135deg, #0e7490, #0891b2, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header .subtitle {
+  font-size: 15px;
+  color: var(--ink-soft);
+  margin: 0 0 16px;
+}
+.header-stats {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.header-stat {
+  background: rgba(8,145,178,0.08);
+  border: 1px solid rgba(8,145,178,0.2);
+  border-radius: 10px;
+  padding: 10px 18px;
+  text-align: center;
+  min-width: 80px;
+}
+.header-stat .num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent);
+  display: block;
+  line-height: 1.2;
+}
+.header-stat .lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+.header .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 6px 16px;
+  border: 1px solid rgba(8,145,178,0.3);
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+.header .back-link:hover {
+  background: rgba(8,145,178,0.1);
+  border-color: var(--accent);
+  transform: translateX(-3px);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align: center;
+  padding: 36px 0 24px;
+  margin-top: 48px;
+  border-top: 1px solid var(--line);
+}
+.footer-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  margin: 0 auto 12px;
+  display: block;
+  background: rgba(8,145,178,0.08);
+  padding: 2px;
+  animation: logoGlow 3s ease-in-out infinite;
+}
+.footer-brand {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #0e7490, #0891b2, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+}
+.footer-links {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.footer-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  padding: 5px 14px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+.footer-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(8,145,178,0.06);
+}
+.footer-copy {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-soft);
+  letter-spacing: 0.5px;
+}
+.footer-copy .heart { color: #dc2626; }
+
+/* ===== STICKY TOOLBAR ===== */
+.toolbar {
+  position: sticky;
+  top: 4px;
+  z-index: 500;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0 6px;
+  margin-bottom: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.toolbar-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.search-input {
+  flex: 1;
+  font-family: var(--body);
+  font-size: 13px;
+  padding: 8px 12px 8px 34px;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--ink-soft); }
+.search-wrap {
+  flex: 1;
+  position: relative;
+}
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-soft);
+  font-size: 14px;
+  pointer-events: none;
+}
+.toolbar-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.toolbar-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  display: none;
+}
+.no-results.visible { display: block; }
+
+/* ===== TOC PILLS ===== */
+.toc-scroll {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding: 0 4px 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(8,145,178,0.3) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.toc-scroll::-webkit-scrollbar { height: 4px; }
+.toc-scroll::-webkit-scrollbar-track { background: transparent; }
+.toc-scroll::-webkit-scrollbar-thumb { background: rgba(8,145,178,0.3); border-radius: 2px; }
+.toc-pill {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.toc-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.toc-pill.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+/* ===== ACCORDION SECTION CARDS ===== */
+.section-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--border-teal);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+.section-card.border-teal    { border-left-color: var(--border-teal); }
+.section-card.border-blue    { border-left-color: var(--border-blue); }
+.section-card.border-purple  { border-left-color: var(--border-purple); }
+.section-card.border-orange  { border-left-color: var(--border-orange); }
+.section-card.border-green   { border-left-color: var(--border-green); }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.section-header:hover { background: var(--accent-light); }
+.section-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+.section-header h2 .sec-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 4px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+}
+.chevron {
+  font-size: 12px;
+  color: var(--ink-soft);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+.section-card.open .chevron { transform: rotate(90deg); }
+
+.section-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+.section-card.open .section-body {
+  max-height: 8000px;
+}
+.section-content {
+  padding: 0 20px 18px;
+}
+.section-content h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin: 16px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed var(--line);
+}
+.section-content h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 12px 0 4px;
+  color: var(--ink);
+}
+
+/* ===== LISTS ===== */
+.section-content ul { margin: 4px 0 10px; padding-left: 18px; }
+.section-content li { margin: 2px 0; font-size: 13px; line-height: 1.55; }
+.section-content li code { font-size: 11.5px; }
+
+/* ===== TABLES ===== */
+.section-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 14px;
+  font-size: 12.5px;
+}
+.section-content th {
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-align: left;
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.section-content td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.section-content tr:nth-child(even) td { background: var(--bg); }
+.section-content table code { font-size: 11px; background: var(--code-bg); color: var(--code-ink); padding: 1px 4px; border-radius: 3px; }
+
+/* ===== CODE BLOCKS ===== */
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: #eef1f5;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #2a3542;
+}
+:root[data-theme="dark"] code { background: #1e293b; color: #e2e8f0; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) code { background: #1e293b; color: #e2e8f0; }
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) code { background: #eef1f5; color: #2a3542; }
+}
+pre {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.55;
+  margin: 8px 0 12px;
+}
+pre code {
+  background: none !important;
+  color: inherit !important;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ===== KEY RECALL BOX ===== */
+.key-recall {
+  background: var(--highlight-bg);
+  border: 1px solid var(--highlight-border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-top: 14px;
+}
+.key-recall .kr-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+.key-recall ul { margin: 0; padding-left: 16px; }
+.key-recall li { font-size: 12.5px; font-weight: 500; margin: 2px 0; }
+
+/* ===== SECTION IMAGES ===== */
+.section-img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  margin: 12px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  background: #f8fafc;
+}
+:root[data-theme="dark"] .section-img { border-color: #334155; background: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .section-img { border-color: #334155; background: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+}
+@media print { .section-img { box-shadow: none; border: 1px solid #ccc; } }
+
+/* ===== DIAGRAM BOX ===== */
+.diagram {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: #eef1f5;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  white-space: pre;
+  overflow-x: auto;
+  margin: 8px 0 12px;
+  color: #2a3542;
+  line-height: 1.5;
+}
+:root[data-theme="dark"] .diagram { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .diagram { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+}
+
+/* ===== TWO COLUMN GRID ===== */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ===== FLASHCARD SECTION ===== */
+.flashcard-section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--card-shadow);
+}
+.flashcard-section h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.flashcard-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.flashcard-counter {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-left: auto;
+}
+.flashcard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.flashcard {
+  perspective: 800px;
+  height: 180px;
+  cursor: pointer;
+}
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+.flashcard.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.flashcard-front {
+  background: linear-gradient(135deg, var(--flip-front), var(--flip-back));
+  color: var(--accent-ink);
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.flashcard-back {
+  background: var(--flip-bg);
+  color: var(--ink);
+  border: 2px solid var(--accent);
+  transform: rotateY(180deg);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.flashcard-label {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align: center;
+  padding: 32px 0 16px;
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+}
+.footer p { font-size: 12px; color: var(--ink-soft); margin: 4px 0; }
+.footer a { font-weight: 600; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .page { padding: 0 12px 60px; }
+  .header { padding: 36px 0 18px; }
+  .header h1 { font-size: 22px; }
+  .section-header { padding: 12px 14px; }
+  .section-header h2 { font-size: 14px; }
+  .section-content { padding: 0 14px 14px; }
+  .section-content table { font-size: 11.5px; display: block; overflow-x: auto; }
+  pre { font-size: 10.5px; padding: 10px 12px; }
+  .theme-toggle { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 16px; }
+  .flashcard-grid { grid-template-columns: 1fr; }
+  .flashcard { height: 160px; }
+  .toolbar-row { flex-wrap: wrap; }
+  .toolbar-btn { font-size: 9px; padding: 6px 10px; }
+  .scroll-top-btn { bottom: 16px; right: 16px; width: 38px; height: 38px; }
+}
+@media (max-width: 400px) {
+  .header h1 { font-size: 19px; }
+  .section-header h2 { font-size: 13px; gap: 6px; }
+  .section-header h2 .sec-num { font-size: 9px; padding: 2px 5px; }
+  .toc-pill { font-size: 8px; padding: 3px 7px; }
+  .search-input { font-size: 12px; padding: 6px 10px 6px 30px; }
+  .progress-text { font-size: 9px; left: 8px; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  body { background: #fff; color: #000; font-size: 11px; }
+  .theme-toggle, .toolbar, .back-link, .scroll-top-btn, .progress-bar-wrap, .progress-text { display: none !important; }
+  .page { max-width: 100%; padding: 0; }
+  .header { padding: 12px 0; border-bottom: 2px solid #000; }
+  .header h1 { -webkit-text-fill-color: #0e7490; font-size: 22px; }
+  .section-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 10px;
+  }
+  .section-body { max-height: none !important; overflow: visible !important; }
+  .chevron { display: none; }
+  pre { font-size: 9.5px; padding: 8px 10px; border: 1px solid #ccc; }
+  .key-recall { border: 1px solid #0891b2; background: #f0fdfa; }
+  code { background: #eee; }
+  a { color: #0e7490; }
+  .footer { padding: 12px 0; }
+  .flashcard-section { break-inside: avoid; page-break-inside: avoid; }
+  .flashcard-inner { transform: none !important; }
+  .flashcard-back { display: none; }
+  .flashcard-front { position: static; border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+<div class="progress-text" id="progressText">0 / 25 read</div>
+
+<!-- THEME TOGGLE -->
+<button class="theme-toggle" id="themeToggle" title="Toggle dark/light theme" aria-label="Toggle theme">
+  <span id="themeIcon">&#9790;</span>
+</button>
+
+<!-- SCROLL TO TOP -->
+<button class="scroll-top-btn" id="scrollTopBtn" title="Scroll to top" aria-label="Scroll to top">&#8593;</button>
+
+<div class="page">
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <img src="sg-logo.png" alt="SG" class="header-logo">
+  <div class="eyebrow">Quick Reference</div>
+  <h1>AEM Interview Cheat Sheet</h1>
+  <p class="subtitle">Complete Quick Reference &mdash; All Topics at a Glance</p>
+  <div class="header-stats">
+    <div class="header-stat"><span class="num">25</span><span class="lbl">Topics</span></div>
+    <div class="header-stat"><span class="num">30</span><span class="lbl">Flashcards</span></div>
+    <div class="header-stat"><span class="num">13</span><span class="lbl">Code Blocks</span></div>
+    <div class="header-stat"><span class="num">50+</span><span class="lbl">Tables</span></div>
+  </div>
+  <a href="AEM_interview_live.html" class="back-link">&larr; Back to Full Interactive Guide</a>
+</header>
+
+<!-- ===== STICKY TOOLBAR ===== -->
+<nav class="toolbar" id="toolbar">
+  <div class="toolbar-row">
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search sections..." autocomplete="off">
+    </div>
+    <button class="toolbar-btn" id="expandAllBtn">Expand All</button>
+    <button class="toolbar-btn" id="collapseAllBtn">Collapse All</button>
+  </div>
+  <div class="toc-scroll" id="tocScroll">
+    <button class="toc-pill" data-target="sec1">Architecture</button>
+    <button class="toc-pill" data-target="sec2">Project Structure</button>
+    <button class="toc-pill" data-target="sec3">OSGi</button>
+    <button class="toc-pill" data-target="sec4">Sling</button>
+    <button class="toc-pill" data-target="sec5">Sling Models</button>
+    <button class="toc-pill" data-target="sec6">HTL</button>
+    <button class="toc-pill" data-target="sec7">Components</button>
+    <button class="toc-pill" data-target="sec8">Templates</button>
+    <button class="toc-pill" data-target="sec9">Workflows</button>
+    <button class="toc-pill" data-target="sec10">DAM</button>
+    <button class="toc-pill" data-target="sec11">CF &amp; GraphQL</button>
+    <button class="toc-pill" data-target="sec12">XF</button>
+    <button class="toc-pill" data-target="sec13">JCR &amp; Queries</button>
+    <button class="toc-pill" data-target="sec14">Dispatcher</button>
+    <button class="toc-pill" data-target="sec15">ClientLibs</button>
+    <button class="toc-pill" data-target="sec16">MSM</button>
+    <button class="toc-pill" data-target="sec17">AEMaaCS</button>
+    <button class="toc-pill" data-target="sec18">Edge Delivery</button>
+    <button class="toc-pill" data-target="sec19">Security</button>
+    <button class="toc-pill" data-target="sec20">Performance</button>
+    <button class="toc-pill" data-target="sec21">CI/CD</button>
+    <button class="toc-pill" data-target="sec22">CAConfig</button>
+    <button class="toc-pill" data-target="sec23">Schedulers</button>
+    <button class="toc-pill" data-target="sec24">REST APIs</button>
+    <button class="toc-pill" data-target="sec25">AEM Forms</button>
+    <button class="toc-pill" data-target="flashcards">Flashcards</button>
+  </div>
+</nav>
+
+<div class="no-results" id="noResults">No sections match your search.</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 1: AEM ARCHITECTURE & STACK                                       -->
+<!-- ========================================================================= -->
+<div class="section-card border-teal" id="sec1" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">01</span> AEM Architecture &amp; Stack</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Technology Stack</h3>
+  <img src="images/aem-architecture-stack.svg" alt="AEM Architecture Stack — 5 layers: Application, Sling, JCR, OSGi, Java" class="section-img">
+  <ul>
+    <li><strong>AEM</strong> = CMS built on <strong>Apache Sling</strong> + <strong>JCR (Jackrabbit Oak)</strong> + <strong>OSGi (Apache Felix)</strong></li>
+    <li>Everything is a JCR node (tree of nodes and properties)</li>
+    <li>Sling maps URLs to JCR resources; OSGi manages service lifecycle</li>
+  </ul>
+
+  <h3>Author → Publish → Dispatcher Architecture</h3>
+  <img src="images/aem-author-publish.svg" alt="AEM Author, Publish, Dispatcher, CDN architecture with replication and flush agents" class="section-img">
+
+  <h3>Instances</h3>
+  <table>
+    <tr><th>Instance</th><th>Purpose</th><th>Port</th></tr>
+    <tr><td><strong>Author</strong></td><td>Content creation, editing, workflows, preview</td><td>4502</td></tr>
+    <tr><td><strong>Publish</strong></td><td>Content delivery to end users</td><td>4503</td></tr>
+    <tr><td><strong>Dispatcher</strong></td><td>Apache module: caching + load balancing + security</td><td>80/443</td></tr>
+  </table>
+
+  <h3>Replication</h3>
+  <ul>
+    <li><strong>Forward:</strong> Author &rarr; Publish (activate/publish content)</li>
+    <li><strong>Reverse:</strong> Publish &rarr; Author (e.g., user-generated content)</li>
+    <li>Agents configured at <code>/etc/replication/agents.author</code></li>
+  </ul>
+
+  <h3>Content Hierarchy</h3>
+  <table>
+    <tr><th>Path</th><th>Purpose</th></tr>
+    <tr><td><code>/content</code></td><td>Site pages and DAM assets</td></tr>
+    <tr><td><code>/apps</code></td><td>Project code: components, templates, servlets</td></tr>
+    <tr><td><code>/libs</code></td><td>AEM product code (never modify)</td></tr>
+    <tr><td><code>/conf</code></td><td>Editable templates, policies, cloud configs</td></tr>
+    <tr><td><code>/etc</code></td><td>Legacy configs, designs, workflow models</td></tr>
+    <tr><td><code>/var</code></td><td>Audit logs, workflow instances, temp data</td></tr>
+    <tr><td><code>/home</code></td><td>Users and groups</td></tr>
+    <tr><td><code>/oak:index</code></td><td>Oak index definitions</td></tr>
+  </table>
+
+  <h3>Run Modes</h3>
+  <ul>
+    <li>Set via <code>sling.run.modes</code> in start script or JVM args</li>
+    <li>Types: <code>author</code>, <code>publish</code>, <code>dev</code>, <code>stage</code>, <code>prod</code></li>
+    <li>Control which OSGi configs activate per environment</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>AEM = Sling + JCR (Oak) + OSGi (Felix) + Java</li>
+      <li>Author (4502) creates; Publish (4503) delivers; Dispatcher caches</li>
+      <li>/apps overlays /libs &mdash; never modify /libs directly</li>
+      <li>Run modes control OSGi config activation per environment</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 2: AEM PROJECT STRUCTURE & ARCHETYPE                              -->
+<!-- ========================================================================= -->
+<div class="section-card border-blue" id="sec2" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">02</span> AEM Project Structure &amp; Archetype</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <img src="images/aem-project-structure.svg" alt="AEM Maven Project Structure — core, ui.apps, ui.content, ui.config, ui.frontend, dispatcher modules" class="section-img">
+
+  <h3>Maven Archetype</h3>
+  <ul>
+    <li>Generates multi-module project: <code>mvn archetype:generate -DarchetypeGroupId=com.adobe.aem -DarchetypeArtifactId=aem-project-archetype</code></li>
+    <li>Current version: Archetype 47+ for AEMaaCS</li>
+  </ul>
+
+  <h3>Module Structure</h3>
+  <table>
+    <tr><th>Module</th><th>Purpose</th></tr>
+    <tr><td><code>core/</code></td><td>Java OSGi bundle: servlets, services, Sling Models, workflows</td></tr>
+    <tr><td><code>ui.apps/</code></td><td>AEM components (HTL, dialogs, clientlibs) &mdash; immutable in cloud</td></tr>
+    <tr><td><code>ui.content/</code></td><td>Sample content and templates &mdash; mutable</td></tr>
+    <tr><td><code>ui.config/</code></td><td>OSGi configurations per runmode</td></tr>
+    <tr><td><code>ui.frontend/</code></td><td>Webpack build for clientlibs (TS/SCSS)</td></tr>
+    <tr><td><code>all/</code></td><td>Aggregation package for deployment</td></tr>
+    <tr><td><code>dispatcher/</code></td><td>Dispatcher configs (Apache + dispatcher module)</td></tr>
+  </table>
+
+  <h3>Build Commands</h3>
+<pre><code># Full build + deploy to local author
+mvn clean install -PautoInstallSinglePackage
+
+# Core bundle only (faster)
+mvn clean install -pl core -PautoInstallBundle
+
+# Frontend only
+cd ui.frontend && npm run build
+
+# Build without tests
+mvn clean install -DskipTests</code></pre>
+
+  <h3>POM Hierarchy</h3>
+  <ul>
+    <li>Reactor parent POM at project root</li>
+    <li>Each module has its own POM inheriting from parent</li>
+    <li><code>uber-jar</code> dependency for AEM 6.5; <code>aem-sdk-api</code> for AEMaaCS</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>core = Java, ui.apps = components, ui.config = OSGi configs, ui.frontend = Webpack</li>
+      <li><code>-PautoInstallSinglePackage</code> deploys everything; <code>-PautoInstallBundle</code> deploys core only</li>
+      <li>all/ aggregates everything into a single deployable package</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 3: OSGi FRAMEWORK & SERVICES                                      -->
+<!-- ========================================================================= -->
+<div class="section-card border-purple" id="sec3" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">03</span> OSGi Framework &amp; Services</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Bundle Lifecycle</h3>
+  <img src="images/osgi-bundle-lifecycle.svg" alt="OSGi Bundle Lifecycle — INSTALLED → RESOLVED → STARTING → ACTIVE → STOPPING → UNINSTALLED" class="section-img">
+
+  <h3>Core Concepts</h3>
+  <ul>
+    <li><strong>OSGi</strong> = modular Java; hot-deploy/update/remove bundles without restart</li>
+    <li><strong>Bundle</strong> = JAR with OSGi metadata in <code>MANIFEST.MF</code></li>
+    <li><strong>Component</strong> = class managed by OSGi with lifecycle + DI</li>
+    <li><strong>Service</strong> = interface registered in the OSGi service registry</li>
+  </ul>
+
+  <h3>Bundle Lifecycle</h3>
+  <div class="diagram">INSTALLED --> RESOLVED --> STARTING --> ACTIVE
+                                             |
+   UNINSTALLED <-- STOPPING <-----------+</div>
+  <ul>
+    <li><strong>INSTALLED:</strong> deployed but dependencies unresolved</li>
+    <li><strong>RESOLVED:</strong> all imports satisfied; ready to start</li>
+    <li><strong>ACTIVE:</strong> running, services registered</li>
+    <li>Stuck in INSTALLED = missing package import</li>
+  </ul>
+
+  <h3>DS R6 Annotations</h3>
+  <table>
+    <tr><th>Annotation</th><th>Purpose</th></tr>
+    <tr><td><code>@Component</code></td><td>Declares DS component (auto-registers as service if implements interface)</td></tr>
+    <tr><td><code>@Reference</code></td><td>Inject another OSGi service</td></tr>
+    <tr><td><code>@Activate</code></td><td>Called when component activates</td></tr>
+    <tr><td><code>@Deactivate</code></td><td>Called when component deactivates</td></tr>
+    <tr><td><code>@Modified</code></td><td>Called when configuration changes at runtime</td></tr>
+    <tr><td><code>@Designate(ocd=...)</code></td><td>Links component to its config interface</td></tr>
+  </table>
+
+  <h3>OSGi Configurations</h3>
+  <ul>
+    <li>Config interface: <code>@ObjectClassDefinition</code> + <code>@AttributeDefinition</code></li>
+    <li>File naming: <code>com.example.MyService.cfg.json</code> (preferred), <code>.config</code>, <code>.xml</code></li>
+    <li>Run mode folders: <code>config.author</code>, <code>config.publish</code>, <code>config.dev</code>, <code>config.stage</code></li>
+    <li>Factory configs: append <code>~instance-id</code> to PID</li>
+  </ul>
+
+  <h3>Felix Console</h3>
+  <table>
+    <tr><th>URL</th><th>Purpose</th></tr>
+    <tr><td><code>/system/console/bundles</code></td><td>View all bundles and their state</td></tr>
+    <tr><td><code>/system/console/components</code></td><td>View DS components</td></tr>
+    <tr><td><code>/system/console/configMgr</code></td><td>Manage OSGi configs</td></tr>
+    <tr><td><code>/system/console/services</code></td><td>View registered services</td></tr>
+    <tr><td><code>/system/console/depfinder</code></td><td>Find package dependencies</td></tr>
+  </table>
+
+  <h3>Service Ranking &amp; Factories</h3>
+  <ul>
+    <li>Multiple impls: <strong>highest ranking wins</strong> &mdash; <code>@Component(property="service.ranking:Integer=1000")</code></li>
+    <li>Default ranking = 0; use to override OOTB implementations</li>
+    <li>Service factories: multiple instances of the same service (factory configs)</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Bundle stuck in INSTALLED = missing package import (check depfinder)</li>
+      <li>DS R6 (@Component, @Reference) preferred over SCR/R4</li>
+      <li>Config naming: PID + run-mode folder determines activation</li>
+      <li>Higher service.ranking = higher priority</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 4: APACHE SLING & RESOURCE RESOLUTION                             -->
+<!-- ========================================================================= -->
+<div class="section-card border-orange" id="sec4" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">04</span> Apache Sling &amp; Resource Resolution</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Request Processing Flow</h3>
+  <img src="images/aem-request-flow.svg" alt="Sling Request Processing — Browser → Dispatcher → Sling Engine → JCR → Response" class="section-img">
+
+  <h3>What is Sling?</h3>
+  <ul>
+    <li>RESTful framework mapping HTTP URLs to JCR resources</li>
+    <li>Request flow: <strong>URL &rarr; Resource &rarr; Script/Servlet</strong></li>
+    <li>Content-centric: URL determines the node, <code>sling:resourceType</code> determines the rendering</li>
+  </ul>
+
+  <h3>URL Decomposition</h3>
+  <div class="diagram">/content/mysite/en/page.selector1.selector2.html/suffix?key=val
+|__________________________|  |_________________| |__| |_____| |______|
+      resource path              selectors        ext   suffix  query</div>
+
+  <h3>Servlet Registration</h3>
+  <div class="two-col">
+    <div>
+      <h4>By Path</h4>
+      <ul>
+        <li><code>sling.servlet.paths=/bin/myservlet</code></li>
+        <li>Ignores resource type</li>
+        <li>Cannot be ACL-controlled via JCR</li>
+        <li>Simpler; utility endpoints</li>
+      </ul>
+    </div>
+    <div>
+      <h4>By Resource Type (Preferred)</h4>
+      <ul>
+        <li><code>sling.servlet.resourceTypes=myapp/page</code></li>
+        <li>Tied to resourceType + selectors + extension</li>
+        <li>Respects JCR ACLs</li>
+        <li>Recommended approach</li>
+      </ul>
+    </div>
+  </div>
+  <ul>
+    <li><code>SlingAllMethodsServlet</code> = GET, POST, PUT, DELETE</li>
+    <li><code>SlingSafeMethodsServlet</code> = GET and HEAD only</li>
+  </ul>
+
+  <h3>ResourceResolver</h3>
+  <ul>
+    <li>Session-based &mdash; <strong>MUST close</strong> if opened manually (try-with-resources)</li>
+    <li>Never use <code>getAdministrativeResourceResolver()</code> (deprecated)</li>
+    <li>Use <strong>service users</strong>: map via Sling Service User Mapping OSGi config</li>
+    <li>Get resolver: <code>resolverFactory.getServiceResourceResolver(authInfo)</code></li>
+  </ul>
+
+  <h3>Sling Resource Merger</h3>
+  <ul>
+    <li><code>/apps</code> overlays <code>/libs</code> &mdash; customization without modifying /libs</li>
+    <li>Properties: <code>sling:hideResource</code>, <code>sling:hideChildren</code>, <code>sling:orderBefore</code></li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Sling = URL &rarr; Resource &rarr; Script/Servlet (content-centric)</li>
+      <li>Servlet by resourceType is preferred over path-based</li>
+      <li>ALWAYS close manually-opened ResourceResolvers</li>
+      <li>Use service users, never admin resolvers</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 5: SLING MODELS                                                   -->
+<!-- ========================================================================= -->
+<div class="section-card border-green" id="sec5" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">05</span> Sling Models</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <img src="images/sling-model-flow.svg" alt="Sling Model injection and lifecycle" class="section-img">
+
+  <h3>Basics</h3>
+  <ul>
+    <li><code>@Model(adaptables={Resource.class, SlingHttpServletRequest.class})</code></li>
+    <li>Injection strategy: <code>defaultInjectionStrategy = OPTIONAL</code> or <code>REQUIRED</code></li>
+    <li>Interface + Impl pattern recommended</li>
+  </ul>
+
+  <h3>Injection Annotations</h3>
+  <table>
+    <tr><th>Annotation</th><th>Injects</th></tr>
+    <tr><td><code>@ValueMapValue</code></td><td>JCR property from resource's ValueMap</td></tr>
+    <tr><td><code>@ChildResource</code></td><td>Child node as a Resource</td></tr>
+    <tr><td><code>@Self</code></td><td>The adaptable itself (request/resource)</td></tr>
+    <tr><td><code>@OSGiService</code></td><td>An OSGi service reference</td></tr>
+    <tr><td><code>@ResourcePath</code></td><td>Resource at a given JCR path</td></tr>
+    <tr><td><code>@ScriptVariable</code></td><td>Script binding (currentPage, designer, etc.)</td></tr>
+    <tr><td><code>@SlingObject</code></td><td>Sling objects (ResourceResolver, Resource, etc.)</td></tr>
+  </table>
+
+  <h3>Lifecycle &amp; Export</h3>
+  <ul>
+    <li><code>@PostConstruct</code>: init logic after all injection completes</li>
+    <li><code>@Exporter(name="jackson", extensions="json")</code>: JSON export via <code>.model.json</code> extension</li>
+  </ul>
+
+  <h3>Code Example</h3>
+<pre><code>@Model(adaptables = Resource.class,
+       defaultInjectionStrategy = DefaultInjectionStrategy.OPTIONAL)
+public class HeroModel {
+
+    @ValueMapValue
+    private String title;
+
+    @ValueMapValue(name = "fileReference")
+    private String imagePath;
+
+    @PostConstruct
+    protected void init() {
+        if (title == null) title = "Default Title";
+    }
+
+    public String getTitle() { return title; }
+    public String getImagePath() { return imagePath; }
+}</code></pre>
+
+  <h3>Testing</h3>
+  <ul>
+    <li>AEM Mocks (io.wcm): <code>AemContext</code> provides mock JCR, ResourceResolver, Sling</li>
+    <li>Mockito for external service dependencies</li>
+    <li>Never make real HTTP calls in tests</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>@ValueMapValue is the most common injection annotation</li>
+      <li>Use OPTIONAL strategy to avoid NPEs on missing properties</li>
+      <li>@PostConstruct runs after injection &mdash; good for validation/defaults</li>
+      <li>@Exporter enables JSON export via .model.json extension</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 6: HTL (SIGHTLY) TEMPLATE LANGUAGE                                -->
+<!-- ========================================================================= -->
+<div class="section-card border-teal" id="sec6" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">06</span> HTL (Sightly) Template Language</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>All HTL Attributes</h3>
+  <table>
+    <tr><th>Attribute</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td><code>data-sly-use</code></td><td>Load backend logic</td><td><code>data-sly-use.model="com.mysite.HeroModel"</code></td></tr>
+    <tr><td><code>data-sly-test</code></td><td>Conditional rendering</td><td><code>data-sly-test="${model.title}"</code></td></tr>
+    <tr><td><code>data-sly-list</code></td><td>Iterate collection</td><td><code>data-sly-list.item="${model.items}"</code></td></tr>
+    <tr><td><code>data-sly-repeat</code></td><td>Repeat on same element</td><td><code>data-sly-repeat="${model.tags}"</code></td></tr>
+    <tr><td><code>data-sly-resource</code></td><td>Include child component</td><td><code>data-sly-resource="${'par' @ resourceType='...'}"</code></td></tr>
+    <tr><td><code>data-sly-include</code></td><td>Include HTL file</td><td><code>data-sly-include="partials/header.html"</code></td></tr>
+    <tr><td><code>data-sly-template</code></td><td>Define reusable template</td><td><code>data-sly-template.tmpl="${@ title}"</code></td></tr>
+    <tr><td><code>data-sly-call</code></td><td>Call a template</td><td><code>data-sly-call="${tmpl @ title='Hello'}"</code></td></tr>
+    <tr><td><code>data-sly-element</code></td><td>Change HTML tag</td><td><code>data-sly-element="${'h2'}"</code></td></tr>
+    <tr><td><code>data-sly-attribute</code></td><td>Set HTML attribute</td><td><code>data-sly-attribute.class="${model.css}"</code></td></tr>
+    <tr><td><code>data-sly-unwrap</code></td><td>Remove wrapping element</td><td><code>data-sly-unwrap</code></td></tr>
+  </table>
+
+  <h3>Display Contexts</h3>
+  <table>
+    <tr><th>Context</th><th>Usage</th></tr>
+    <tr><td><code>html</code></td><td>HTML content (default, XSS-safe)</td></tr>
+    <tr><td><code>text</code></td><td>Plain text (entities escaped)</td></tr>
+    <tr><td><code>attribute</code></td><td>HTML attribute values</td></tr>
+    <tr><td><code>uri</code></td><td>href/src URLs</td></tr>
+    <tr><td><code>scriptString</code></td><td>Inside JS strings</td></tr>
+    <tr><td><code>number</code></td><td>Numeric values</td></tr>
+    <tr><td><code>unsafe</code></td><td>No escaping (avoid!)</td></tr>
+  </table>
+
+  <h3>Global Objects</h3>
+  <ul>
+    <li><code>properties</code> &mdash; component properties (ValueMap)</li>
+    <li><code>pageProperties</code> &mdash; page-level properties</li>
+    <li><code>currentPage</code>, <code>currentNode</code>, <code>resource</code>, <code>request</code>, <code>response</code></li>
+    <li><code>wcmmode</code> &mdash; WCM mode (edit, preview, disabled)</li>
+  </ul>
+
+  <h3>Template + Call Pattern</h3>
+<pre><code>&lt;!-- Define template --&gt;
+&lt;sly data-sly-template.card="${@ title, desc}"&gt;
+  &lt;div class="card"&gt;
+    &lt;h3&gt;${title}&lt;/h3&gt;
+    &lt;p&gt;${desc}&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/sly&gt;
+
+&lt;!-- Call template --&gt;
+&lt;sly data-sly-call="${card @ title='Hello', desc='World'}" /&gt;</code></pre>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>data-sly-use loads logic, data-sly-test = conditional, data-sly-list = loop</li>
+      <li>Default context is 'html' &mdash; auto-escaped for XSS</li>
+      <li>data-sly-resource includes components; data-sly-include includes HTL files</li>
+      <li>Never use context='unsafe' unless absolutely necessary</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 7: COMPONENTS & DIALOGS                                           -->
+<!-- ========================================================================= -->
+<div class="section-card border-blue" id="sec7" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">07</span> Components &amp; Dialogs</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Component Structure</h3>
+  <img src="images/aem-component-structure.svg" alt="AEM Component folder structure — .content.xml, _cq_dialog, HTL, Model, ClientLib, editConfig" class="section-img">
+  <ul>
+    <li><code>.content.xml</code> &mdash; metadata (jcr:primaryType, componentGroup, sling:resourceSuperType)</li>
+    <li><code>_cq_dialog/</code> &mdash; Touch UI dialog (Granite/Coral fields)</li>
+    <li><code>*.html</code> &mdash; HTL template</li>
+    <li><code>clientlib/</code> &mdash; component-specific CSS/JS</li>
+    <li><code>_cq_editConfig.xml</code> &mdash; edit configuration (in-place editing, drag-drop)</li>
+  </ul>
+
+  <h3>Core Components &amp; Proxy Pattern</h3>
+  <ul>
+    <li><strong>Core Components:</strong> <code>/libs/core/wcm/components</code> &mdash; always extend, never modify</li>
+    <li><strong>Proxy:</strong> component in /apps with <code>sling:resourceSuperType</code> pointing to Core Component</li>
+    <li>Keeps upgrade path intact while allowing customization</li>
+  </ul>
+
+  <h3>Common Dialog Fields</h3>
+  <table>
+    <tr><th>Field</th><th>Granite Resource Type</th></tr>
+    <tr><td>Text field</td><td><code>granite/ui/components/coral/foundation/form/textfield</code></td></tr>
+    <tr><td>Text area</td><td><code>.../form/textarea</code></td></tr>
+    <tr><td>Path field</td><td><code>.../form/pathfield</code></td></tr>
+    <tr><td>Checkbox</td><td><code>.../form/checkbox</code></td></tr>
+    <tr><td>Select</td><td><code>.../form/select</code></td></tr>
+    <tr><td>Date picker</td><td><code>.../form/datepicker</code></td></tr>
+    <tr><td>Color picker</td><td><code>.../form/colorfield</code></td></tr>
+    <tr><td>Multifield</td><td><code>.../form/multifield</code></td></tr>
+    <tr><td>Rich text</td><td><code>cq/gui/components/authoring/dialog/richtext</code></td></tr>
+    <tr><td>File upload</td><td><code>.../form/fileupload</code></td></tr>
+    <tr><td>Hidden</td><td><code>.../form/hidden</code></td></tr>
+  </table>
+
+  <h3>Design &amp; Edit Config</h3>
+  <ul>
+    <li><strong>Design dialog:</strong> <code>_cq_design_dialog</code> for template-level policies</li>
+    <li><strong>Edit config:</strong> <code>_cq_editConfig.xml</code> for in-place editing, empty text, drag-drop</li>
+    <li><code>componentGroup</code>: organizes components in editor sidekick (e.g., "SumitGroup")</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Always proxy Core Components via sling:resourceSuperType</li>
+      <li>Dialog fields stored in jcr:content, read via Sling Models or ${properties.field}</li>
+      <li>Multifield = repeatable field groups; richtext = WYSIWYG editor</li>
+      <li>componentGroup controls visibility in the editor component panel</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 8: EDITABLE TEMPLATES & POLICIES                                  -->
+<!-- ========================================================================= -->
+<div class="section-card border-purple" id="sec8" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">08</span> Editable Templates &amp; Policies</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <img src="images/editable-template.svg" alt="Editable Template — Structure (locked), Initial Content (default), Policies (rules)" class="section-img">
+
+  <h3>Editable Templates (Recommended)</h3>
+  <ul>
+    <li>Location: <code>/conf/mysite/settings/wcm/templates</code></li>
+    <li>Template Types define the blueprint &rarr; Templates define page structure</li>
+    <li>Three layers:
+      <ul>
+        <li><strong>Structure:</strong> locked components (header/footer)</li>
+        <li><strong>Initial content:</strong> default content for new pages</li>
+        <li><strong>Policies:</strong> component + style system configuration</li>
+      </ul>
+    </li>
+    <li>Template editor: <code>/editor.html/conf/...</code></li>
+  </ul>
+
+  <h3>Static Templates (Legacy)</h3>
+  <ul>
+    <li>Location: <code>/apps/mysite/templates</code></li>
+    <li>No runtime editing &mdash; changes require code deployment</li>
+  </ul>
+
+  <h3>Content Policies</h3>
+  <ul>
+    <li>Location: <code>/conf/mysite/settings/wcm/policies</code></li>
+    <li>Control: allowed components, style system classes, design properties</li>
+    <li>Applied via policy mapping in template editor</li>
+  </ul>
+
+  <h3>Style System</h3>
+  <ul>
+    <li>Add CSS classes to components without code changes</li>
+    <li>Configure in template policies &rarr; component &rarr; style tab</li>
+    <li>Groups: e.g., "Layout" (full-width, centered), "Color" (dark, light)</li>
+  </ul>
+
+  <h3>Layout Container</h3>
+  <ul>
+    <li>Responsive grid with configurable breakpoints</li>
+    <li>Authors can resize components in the grid</li>
+    <li>Allowed components controlled per template via policies</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Editable (/conf) = recommended; Static (/apps) = legacy</li>
+      <li>Template = structure (locked) + initial (defaults) + policies (config)</li>
+      <li>Style System adds CSS classes without code &mdash; configured in policies</li>
+      <li>Layout container = responsive grid; breakpoints configurable</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 9: WORKFLOWS & LAUNCHERS                                          -->
+<!-- ========================================================================= -->
+<div class="section-card border-orange" id="sec9" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">09</span> Workflows &amp; Launchers</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <img src="images/aem-workflow.svg" alt="AEM Workflow — Process Step, Participant Step, OR Split, Launchers" class="section-img">
+
+  <h3>Workflow Engine</h3>
+  <table>
+    <tr><th>Concept</th><th>Details</th></tr>
+    <tr><td>Engine</td><td>Granite workflow engine (models at <code>/var/workflow/models</code>)</td></tr>
+    <tr><td>Step types</td><td>Process, Participant, OR Split, AND Split, Container</td></tr>
+    <tr><td>OOTB examples</td><td>Request for Activation, DAM Update Asset</td></tr>
+    <tr><td>Payload</td><td>Path to the content node being processed</td></tr>
+  </table>
+
+  <h3>Custom Process Step</h3>
+<pre><code>@Component(service = WorkflowProcess.class, property = {
+    "process.label=My Custom Step"
+})
+public class MyStep implements WorkflowProcess {
+    private static final Logger LOG =
+        LoggerFactory.getLogger(MyStep.class);
+
+    @Override
+    public void execute(WorkItem workItem,
+                        WorkflowSession session,
+                        MetaDataMap args)
+                        throws WorkflowException {
+        String path = workItem.getWorkflowData()
+            .getPayload().toString();
+        LOG.info("Processing: {}", path);
+    }
+}</code></pre>
+
+  <h3>Workflow Launchers</h3>
+  <ul>
+    <li>Auto-trigger on node created/modified/deleted</li>
+    <li>Conditions: <code>nodeType</code>, <code>glob</code> (path pattern), <code>eventType</code></li>
+    <li>Configured at <code>/libs/settings/workflow/launcher</code> (overlay in /conf)</li>
+  </ul>
+
+  <h3>Transient Workflows</h3>
+  <ul>
+    <li>Don't persist full history &mdash; better performance</li>
+    <li>Used for DAM asset processing</li>
+    <li>Required in AEMaaCS (no persistent workflow history)</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Custom step: implement WorkflowProcess.execute()</li>
+      <li>Launchers auto-trigger workflows on JCR events</li>
+      <li>Transient workflows = no history persistence = better performance</li>
+      <li>AEMaaCS requires transient workflows</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 10: DAM & ASSET MANAGEMENT                                        -->
+<!-- ========================================================================= -->
+<div class="section-card border-green" id="sec10" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">10</span> DAM &amp; Asset Management</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Fundamentals</h3>
+  <ul>
+    <li>Assets stored under <code>/content/dam</code></li>
+    <li>Upload triggers DAM Update Asset workflow &rarr; renditions + metadata extraction</li>
+    <li>Renditions: original + web + thumbnail + custom sizes</li>
+  </ul>
+
+  <h3>Key Features</h3>
+  <table>
+    <tr><th>Feature</th><th>Details</th></tr>
+    <tr><td>Metadata schemas</td><td>Customize asset metadata forms</td></tr>
+    <tr><td>Smart Tags</td><td>AI-powered auto-tagging of images</td></tr>
+    <tr><td>Dynamic Media</td><td>On-the-fly image/video transformations (SaaS add-on)</td></tr>
+    <tr><td>Processing profiles</td><td>Image, video, and custom processing profiles</td></tr>
+    <tr><td>Versioning</td><td>Asset versioning with compare and restore</td></tr>
+    <tr><td>Asset Compute (Cloud)</td><td>Microservice asset processing (replaces DAM workflow)</td></tr>
+  </table>
+
+  <h3>Renditions</h3>
+  <ul>
+    <li>Stored under <code>/content/dam/myasset/jcr:content/renditions</code></li>
+    <li>Types: <code>original</code>, <code>cq5dam.web.1280.1280</code>, <code>cq5dam.thumbnail.48.48</code>, etc.</li>
+    <li>Custom renditions via processing profiles or workflow steps</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>DAM Update Asset workflow creates renditions and extracts metadata</li>
+      <li>Dynamic Media = SaaS on-the-fly image/video transformation</li>
+      <li>AEMaaCS uses Asset Compute microservices instead of workflow</li>
+      <li>Smart Tags = AI auto-tagging; metadata schemas = custom metadata forms</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 11: CONTENT FRAGMENTS & GRAPHQL                                   -->
+<!-- ========================================================================= -->
+<div class="section-card border-teal" id="sec11" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">11</span> Content Fragments &amp; GraphQL</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Content Fragments</h3>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Purpose</td><td>Structured content for headless/omnichannel delivery</td></tr>
+    <tr><td>Storage</td><td><code>/content/dam</code></td></tr>
+    <tr><td>Models</td><td>Schema: text, number, date, reference, JSON, enum, tags</td></tr>
+    <tr><td>Model location</td><td><code>/conf/mysite/settings/dam/cfm/models</code></td></tr>
+    <tr><td>Variations</td><td>Master + custom variations</td></tr>
+  </table>
+
+  <h3>GraphQL API</h3>
+  <ul>
+    <li>Endpoint: <code>/graphql/execute.json/{config}/{query-name}</code></li>
+    <li><strong>Persisted queries:</strong> pre-defined, GET-accessible, cached at Dispatcher/CDN (recommended)</li>
+    <li>Non-persisted queries: POST request with query body</li>
+  </ul>
+
+  <h3>JSON Export (Sling Model Exporter)</h3>
+  <ul>
+    <li><code>@Exporter(name="jackson", extensions="json")</code> on Sling Model</li>
+    <li>Access via <code>.model.json</code> extension</li>
+    <li>Content Services for page-level JSON export</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>CF = structured data for headless delivery via GraphQL/REST</li>
+      <li>CF Models define schema; stored in /conf, fragments in /content/dam</li>
+      <li>Use persisted queries for GraphQL (performance + caching)</li>
+      <li>Sling Model Exporter = @Exporter for JSON output</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 12: EXPERIENCE FRAGMENTS                                          -->
+<!-- ========================================================================= -->
+<div class="section-card border-blue" id="sec12" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">12</span> Experience Fragments</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Basics</h3>
+  <ul>
+    <li>Reusable group of components with visual layout</li>
+    <li>Stored under <code>/content/experience-fragments</code></li>
+    <li>Variations: web, email, social media, plain text</li>
+    <li>Building blocks: sub-groups within an XF</li>
+  </ul>
+
+  <h3>Use Cases</h3>
+  <ul>
+    <li>Shared headers/footers across pages</li>
+    <li>Promotional banners</li>
+    <li>Social media content snippets</li>
+    <li>Export to Adobe Target as offers</li>
+  </ul>
+
+  <h3>CF vs XF Comparison</h3>
+  <img src="images/cf-vs-xf.svg" alt="Content Fragments vs Experience Fragments — structured data vs visual components" class="section-img">
+  <table>
+    <tr><th>Criteria</th><th>Content Fragment</th><th>Experience Fragment</th></tr>
+    <tr><td>Content type</td><td>Structured data (headless)</td><td>Visual components (rendered)</td></tr>
+    <tr><td>Presentation</td><td>No layout &mdash; consumer decides</td><td>Includes layout and styling</td></tr>
+    <tr><td>Channel</td><td>Omnichannel (web, mobile, IoT)</td><td>Web, email, Target</td></tr>
+    <tr><td>Delivery</td><td>GraphQL, REST APIs</td><td>AEM rendering, Target offers</td></tr>
+  </table>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>XF = visual component groups with layout; CF = structured data</li>
+      <li>XF variations: web, email, social, Adobe Target export</li>
+      <li>Use XF for reusable page sections (headers, banners)</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 13: JCR QUERIES & OAK INDEXES                                     -->
+<!-- ========================================================================= -->
+<div class="section-card border-purple" id="sec13" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">13</span> JCR Queries &amp; Oak Indexes</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Query Languages</h3>
+
+  <h4>1. SQL2 (Preferred)</h4>
+<pre><code>SELECT * FROM [cq:Page] AS p
+WHERE ISDESCENDANTNODE(p, '/content/mysite')
+AND p.[jcr:content/jcr:title] = 'Home'</code></pre>
+
+  <h4>2. XPath (Legacy)</h4>
+<pre><code>/jcr:root/content/mysite//element(*, cq:Page)
+  [jcr:content/@jcr:title = 'Home']</code></pre>
+
+  <h4>3. QueryBuilder (AEM-Specific)</h4>
+<pre><code>path=/content/mysite
+type=cq:Page
+property=jcr:content/jcr:title
+property.value=Home
+orderby=@jcr:content/jcr:created
+orderby.sort=desc
+p.limit=10</code></pre>
+  <ul>
+    <li>REST: <code>/bin/querybuilder.json?path=/content&amp;type=cq:Page</code></li>
+    <li>Predicates: <code>fulltext</code>, <code>daterange</code>, <code>tagid</code>, <code>nodename</code>, <code>hasPermission</code></li>
+  </ul>
+
+  <h3>Oak Index Types</h3>
+  <table>
+    <tr><th>Type</th><th>Use Case</th><th>Notes</th></tr>
+    <tr><td><strong>Lucene</strong></td><td>Full-text search, sorting</td><td>Most versatile</td></tr>
+    <tr><td><strong>Property</strong></td><td>Equality lookups</td><td>Fast for exact matches</td></tr>
+    <tr><td><strong>Ordered</strong></td><td>Range queries</td><td>Deprecated in favor of Lucene</td></tr>
+  </table>
+  <ul>
+    <li>Defined at <code>/oak:index</code> with <code>oak:QueryIndexDefinition</code> node type</li>
+    <li><strong>NEVER</strong> rely on traversal queries in production</li>
+    <li>Debug: <code>/system/console/queryperformance</code>, explain query</li>
+  </ul>
+
+  <h3>Common Node Types</h3>
+  <table>
+    <tr><th>Node Type</th><th>Usage</th></tr>
+    <tr><td><code>nt:unstructured</code></td><td>Flexible, no schema (most common)</td></tr>
+    <tr><td><code>cq:Page</code></td><td>AEM page</td></tr>
+    <tr><td><code>cq:PageContent</code></td><td>Page jcr:content child</td></tr>
+    <tr><td><code>dam:Asset</code></td><td>DAM asset</td></tr>
+    <tr><td><code>sling:Folder</code></td><td>Folder with resourceType</td></tr>
+  </table>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>SQL2 = preferred; QueryBuilder = predicate-based REST API</li>
+      <li>ALWAYS create Oak indexes &mdash; traversal = performance disaster</li>
+      <li>nt:unstructured = most common; cq:Page = page nodes</li>
+      <li>Debug queries at /system/console/queryperformance</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 14: DISPATCHER & CACHING                                          -->
+<!-- ========================================================================= -->
+<div class="section-card border-orange" id="sec14" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">14</span> Dispatcher &amp; Caching</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Caching Layers — Request Journey</h3>
+  <img src="images/aem-caching-layers.svg" alt="AEM Caching Layers — Browser → CDN → Dispatcher → AEM Publish with hit rates and latency" class="section-img">
+
+  <h3>What is Dispatcher?</h3>
+  <ul>
+    <li>Apache module: <strong>caching</strong> + <strong>load balancing</strong> + <strong>security filtering</strong></li>
+    <li>Sits in front of AEM Publish instance</li>
+  </ul>
+
+  <h3>Request Flow</h3>
+  <div class="diagram">Browser --> CDN --> Dispatcher (Apache) --> AEM Publish
+             ^              |
+             |         Cache Layer
+             |     (static HTML files)
+             +--- cached response</div>
+
+  <h3>Configuration (dispatcher.any)</h3>
+  <table>
+    <tr><th>Section</th><th>Purpose</th></tr>
+    <tr><td><code>/filter</code></td><td>Allow/deny URL patterns (whitelist approach)</td></tr>
+    <tr><td><code>/cache</code></td><td>What to cache: rules, docroot, statfileslevel</td></tr>
+    <tr><td><code>/invalidate</code></td><td>Auto-invalidation rules on publish</td></tr>
+    <tr><td><code>/renders</code></td><td>AEM Publish instances (render farm)</td></tr>
+    <tr><td><code>/virtualhosts</code></td><td>Domain/hostname matching</td></tr>
+  </table>
+
+  <h3>Cache Invalidation</h3>
+  <table>
+    <tr><th>Method</th><th>How</th></tr>
+    <tr><td>Auto-invalidation</td><td>On publish, .stat file touched; stale cache re-fetched</td></tr>
+    <tr><td>statfileslevel</td><td>Higher = more targeted invalidation</td></tr>
+    <tr><td>TTL-based</td><td>max-age headers; cache expires after time</td></tr>
+    <tr><td>Flush agents</td><td>Replication agents trigger dispatcher flush</td></tr>
+  </table>
+
+  <h3>Security Filters</h3>
+  <ul>
+    <li>Block: <code>/crx</code>, <code>/system/console</code>, <code>/bin/querybuilder.json</code></li>
+    <li>Filter selectors to prevent DoS via selector bombing</li>
+    <li>Vanity URLs: short URLs mapped to content paths</li>
+    <li>CDN (Fastly, CloudFront, Akamai) sits in front of Dispatcher</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Dispatcher = caching + load balancing + security</li>
+      <li>statfileslevel controls invalidation granularity</li>
+      <li>Caching: Browser &rarr; CDN &rarr; Dispatcher &rarr; AEM Publish</li>
+      <li>Always block sensitive paths in /filter rules</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 15: CLIENTLIBS & FRONTEND                                         -->
+<!-- ========================================================================= -->
+<div class="section-card border-green" id="sec15" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">15</span> ClientLibs &amp; Frontend</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>ClientLibs Basics</h3>
+  <ul>
+    <li>Node type: <code>cq:ClientLibraryFolder</code></li>
+    <li><code>categories</code>: unique ID (e.g., <code>mysite.page</code>)</li>
+    <li><code>dependencies</code>: other clientlibs loaded <em>before</em></li>
+    <li><code>embed</code>: merge into single file (better performance)</li>
+    <li><code>css.txt</code> / <code>js.txt</code>: file lists defining load order</li>
+  </ul>
+
+  <h3>Including in HTL</h3>
+<pre><code>&lt;sly data-sly-use.clientlib=
+  "/libs/granite/sightly/templates/clientlib.html"&gt;
+  &lt;sly data-sly-call=
+    "${clientlib.all @ categories='mysite.page'}"/&gt;
+&lt;/sly&gt;
+&lt;!-- .css = CSS only, .js = JS only, .all = both --&gt;</code></pre>
+
+  <h3>Webpack / Frontend Build</h3>
+  <ul>
+    <li><code>ui.frontend</code>: Webpack + TypeScript + SCSS</li>
+    <li>Output compiled into <code>/apps/mysite/clientlibs</code></li>
+    <li>npm build &rarr; Maven copies to ui.apps &rarr; deployed</li>
+  </ul>
+
+  <h3>Embed vs Dependencies</h3>
+  <table>
+    <tr><th>Feature</th><th>embed</th><th>dependencies</th></tr>
+    <tr><td>Result</td><td>Single merged file</td><td>Separate requests, ordered</td></tr>
+    <tr><td>Performance</td><td>Better (fewer requests)</td><td>More requests</td></tr>
+    <tr><td>Use case</td><td>Bundle shared code</td><td>Guarantee load order</td></tr>
+  </table>
+
+  <ul>
+    <li>Versioned URLs: <code>/etc.clientlibs</code> with long cache TTL</li>
+    <li>Minification: built-in AEM minification or Webpack</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>categories = unique ID; embed merges for performance</li>
+      <li>HTL: data-sly-call="${clientlib.all @ categories='...'}"</li>
+      <li>ui.frontend: Webpack &rarr; compiled to /apps/mysite/clientlibs</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 16: MSM & LANGUAGE COPY                                           -->
+<!-- ========================================================================= -->
+<div class="section-card border-teal" id="sec16" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">16</span> MSM &amp; Language Copy</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <img src="images/msm-live-copy.svg" alt="MSM — Blueprint to Live Copy with rollout, inheritance, and cancel" class="section-img">
+
+  <h3>Multi-Site Manager</h3>
+  <table>
+    <tr><th>Concept</th><th>Details</th></tr>
+    <tr><td>Blueprint</td><td>Source site (master content)</td></tr>
+    <tr><td>Live Copy</td><td>Target site (inherits from blueprint)</td></tr>
+    <tr><td>Rollout Config</td><td>Rules for what syncs and when</td></tr>
+    <tr><td>Inheritance</td><td>Can be cancelled per component/page</td></tr>
+  </table>
+
+  <h3>Rollout</h3>
+  <ul>
+    <li>Triggers: on modification, on publish, manual</li>
+    <li>Deep vs shallow: controls depth of inheritance propagation</li>
+    <li>Conflict: rollout wins by default; customizable</li>
+    <li>Detach = permanently break inheritance</li>
+  </ul>
+
+  <h3>Language Copy</h3>
+  <ul>
+    <li>i18n translation workflow</li>
+    <li>Structure: <code>/content/mysite/en</code>, <code>/de</code>, <code>/fr</code></li>
+    <li>Translation connector + rules + workflow</li>
+    <li>Integration with translation providers (SDL, etc.)</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Blueprint = source, Live Copy = target, Rollout Config = sync rules</li>
+      <li>Inheritance can be cancelled per component or page</li>
+      <li>Language Copy uses i18n translation workflow with connector</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 17: AEM AS A CLOUD SERVICE                                        -->
+<!-- ========================================================================= -->
+<div class="section-card border-blue" id="sec17" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">17</span> AEM as a Cloud Service</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <img src="images/aem-6-5-vs-cloud.svg" alt="AEM 6.5 vs AEMaaCS — side-by-side comparison of deployment, config, scaling, and updates" class="section-img">
+
+  <h3>Key Characteristics</h3>
+  <ul>
+    <li>Cloud-native: auto-scaling, always updated, CI/CD via Cloud Manager</li>
+    <li>No version numbers &mdash; always latest</li>
+  </ul>
+
+  <h3>Critical Differences from 6.5</h3>
+  <table>
+    <tr><th>Area</th><th>AEM 6.5</th><th>AEMaaCS</th></tr>
+    <tr><td>/apps, /libs</td><td>Mutable at runtime</td><td><strong>Immutable</strong> &mdash; Git + Cloud Manager only</td></tr>
+    <tr><td>Mutable areas</td><td>Everything</td><td><code>/content</code>, <code>/conf</code>, <code>/var</code>, <code>/tmp</code>, <code>/home</code></td></tr>
+    <tr><td>CRXDE</td><td>Always available</td><td>Dev environments only</td></tr>
+    <tr><td>OSGi config</td><td>Felix Console</td><td>Config files in Git</td></tr>
+    <tr><td>Deployment</td><td>Package Manager</td><td>Cloud Manager CI/CD</td></tr>
+    <tr><td>Scaling</td><td>Manual</td><td>Auto-scaling</td></tr>
+    <tr><td>Assets</td><td>DAM workflow</td><td>Asset Compute microservices</td></tr>
+  </table>
+
+  <h3>Key Tools</h3>
+  <table>
+    <tr><th>Tool</th><th>Purpose</th></tr>
+    <tr><td>Cloud Manager</td><td>CI/CD pipelines, environments, quality gates</td></tr>
+    <tr><td>Content Transfer Tool</td><td>Migrate from AEM 6.x to cloud</td></tr>
+    <tr><td>AEM SDK</td><td>Local development (Quickstart JAR + Dispatcher Tools)</td></tr>
+    <tr><td>RDE</td><td>Rapid Development Environment for quick testing</td></tr>
+    <tr><td>Asset Compute</td><td>Microservice-based asset processing</td></tr>
+    <tr><td>Developer Console</td><td>Monitoring, logs, status</td></tr>
+  </table>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>/apps and /libs are IMMUTABLE in cloud &mdash; all code via Git</li>
+      <li>Mutable paths: /content, /conf, /var, /tmp, /home</li>
+      <li>Asset Compute replaces DAM Update Asset workflow</li>
+      <li>Content Transfer Tool for 6.x to cloud migration</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 18: EDGE DELIVERY SERVICES                                        -->
+<!-- ========================================================================= -->
+<div class="section-card border-purple" id="sec18" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">18</span> Edge Delivery Services</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Overview</h3>
+  <ul>
+    <li>Document-based authoring (Google Docs / SharePoint)</li>
+    <li>Franklin architecture: Git-based content &rarr; ultra-fast delivery</li>
+    <li>Lighthouse score 100: performance-first approach</li>
+  </ul>
+
+  <h3>Key Concepts</h3>
+  <table>
+    <tr><th>Concept</th><th>Details</th></tr>
+    <tr><td>Blocks</td><td>Reusable content components (similar to AEM components)</td></tr>
+    <tr><td>Universal Editor</td><td>Visual editing for headless + hybrid content</td></tr>
+    <tr><td>SSR at edge</td><td>Server-side rendering at CDN edge for speed</td></tr>
+    <tr><td>Content source</td><td>Google Docs, SharePoint, or AEM Author</td></tr>
+    <tr><td>Delivery</td><td>CDN-first, sub-second page loads</td></tr>
+  </table>
+
+  <h3>Architecture</h3>
+  <ul>
+    <li>Content in document &rarr; Git repo &rarr; Build &rarr; CDN edge</li>
+    <li>No traditional AEM rendering pipeline</li>
+    <li>Plain HTML/CSS/JS &mdash; no heavy framework</li>
+    <li>Complementary to AEM Sites (not a replacement)</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>EDS = document-based authoring + Git + CDN edge delivery</li>
+      <li>Lighthouse 100 &mdash; performance-first architecture</li>
+      <li>Blocks = reusable components; Universal Editor = visual editing</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 19: SECURITY & PERMISSIONS                                        -->
+<!-- ========================================================================= -->
+<div class="section-card border-orange" id="sec19" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">19</span> Security &amp; Permissions</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <img src="images/aem-security.svg" alt="AEM Security Layers — Dispatcher, Authentication, Authorization, Code-Level Protection" class="section-img">
+
+  <h3>Users &amp; Groups</h3>
+  <ul>
+    <li>Users: <code>/home/users</code> | Groups: <code>/home/groups</code></li>
+    <li>AEMaaCS: user management via Adobe Admin Console (IMS)</li>
+    <li>Best practice: assign permissions to groups, not individual users</li>
+  </ul>
+
+  <h3>ACLs</h3>
+  <table>
+    <tr><th>Concept</th><th>Details</th></tr>
+    <tr><td>ACL</td><td>Allow/deny on JCR paths via <code>rep:policy</code> nodes</td></tr>
+    <tr><td>Privileges</td><td><code>jcr:read</code>, <code>jcr:write</code>, <code>crx:replicate</code></td></tr>
+    <tr><td>Inheritance</td><td>Permissions cascade down; deny overrides allow</td></tr>
+  </table>
+
+  <h3>CUG (Closed User Groups)</h3>
+  <ul>
+    <li>Restrict page access to specific groups</li>
+    <li>Requires <code>granite:AuthenticationRequired</code> mixin + login page</li>
+  </ul>
+
+  <h3>Service Users</h3>
+  <ul>
+    <li>Non-login users for OSGi services &mdash; <strong>NEVER use admin session</strong></li>
+    <li>Create as <code>rep:SystemUser</code> under <code>/home/users/system</code></li>
+    <li>Map: <code>bundleId:subServiceName=[system-user-name]</code></li>
+  </ul>
+
+  <h3>Security Best Practices</h3>
+  <table>
+    <tr><th>Area</th><th>Practice</th></tr>
+    <tr><td>XSS</td><td>HTL auto-escapes (context='html' default)</td></tr>
+    <tr><td>CSRF</td><td>Built-in token validation for POST requests</td></tr>
+    <tr><td>Dispatcher</td><td>Block /crx, /system/console, /bin/* in prod</td></tr>
+    <tr><td>API keys</td><td>Never log or expose; use AEM Crypto API</td></tr>
+    <tr><td>SSO</td><td>SAML 2.0 / IMS for Author authentication</td></tr>
+    <tr><td>Adobe IMS</td><td>Service credentials, JWT/OAuth tokens</td></tr>
+  </table>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>ACLs on groups, not users; deny overrides allow</li>
+      <li>Service users replace admin sessions &mdash; ServiceUserMapper config</li>
+      <li>CSRF protection is built-in for POST requests</li>
+      <li>Dispatcher must block /crx, /system/console, /bin</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 20: PERFORMANCE & OPTIMIZATION                                    -->
+<!-- ========================================================================= -->
+<div class="section-card border-green" id="sec20" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">20</span> Performance &amp; Optimization</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Caching Layers</h3>
+  <div class="diagram">Browser Cache --> CDN --> Dispatcher Cache --> AEM Publish
+  (max-age)     (TTL/rules)  (stat file)      (renders)</div>
+  <ul>
+    <li>Set appropriate <code>Cache-Control</code> headers</li>
+    <li>Use <code>stale-while-revalidate</code> for better UX</li>
+    <li>Cache static resources aggressively; invalidate on publish</li>
+  </ul>
+
+  <h3>Query Performance</h3>
+  <table>
+    <tr><th>Do</th><th>Don't</th></tr>
+    <tr><td>Create custom Oak indexes</td><td>Rely on traversal queries</td></tr>
+    <tr><td>Restrict with ISDESCENDANTNODE</td><td>Query from root (/)</td></tr>
+    <tr><td>Use p.limit to cap results</td><td>Fetch unbounded result sets</td></tr>
+    <tr><td>Monitor /system/console/queryperformance</td><td>Deploy without testing</td></tr>
+  </table>
+
+  <h3>Code Best Practices</h3>
+  <ul>
+    <li><strong>ResourceResolver:</strong> always close in try-with-resources; use service users</li>
+    <li><strong>HTTP clients:</strong> set timeouts (connect + socket); close in try-with-resources</li>
+    <li><strong>Sling Models:</strong> prefer OPTIONAL strategy; use @PostConstruct wisely</li>
+    <li><strong>Logging:</strong> SLF4J only; never System.out; never log PII</li>
+  </ul>
+
+  <h3>Frontend Performance</h3>
+  <ul>
+    <li>Lazy load images and below-the-fold components</li>
+    <li><code>async</code> / <code>defer</code> on script tags</li>
+    <li>Embed clientlibs to reduce HTTP requests</li>
+    <li>Core Web Vitals: LCP, FID/INP, CLS</li>
+  </ul>
+
+  <h3>Monitoring</h3>
+  <table>
+    <tr><th>Tool</th><th>Purpose</th></tr>
+    <tr><td><code>request.log</code></td><td>Request timing + response codes</td></tr>
+    <tr><td><code>error.log</code></td><td>Errors and exceptions</td></tr>
+    <tr><td><code>/system/console/queryperformance</code></td><td>Slow/popular queries</td></tr>
+    <tr><td><code>/system/health</code></td><td>AEM Health Check dashboard</td></tr>
+  </table>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Cache: Browser &rarr; CDN &rarr; Dispatcher &rarr; AEM</li>
+      <li>ALWAYS create Oak indexes; traversal = unacceptable in production</li>
+      <li>Close ResourceResolvers; leaks = memory exhaustion</li>
+      <li>Monitor: request.log, error.log, query performance console</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 21: CI/CD & CLOUD MANAGER                                         -->
+<!-- ========================================================================= -->
+<div class="section-card border-teal" id="sec21" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">21</span> CI/CD &amp; Cloud Manager</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Cloud Manager Pipelines</h3>
+  <table>
+    <tr><th>Pipeline Type</th><th>Scope</th></tr>
+    <tr><td>Full-stack</td><td>Backend + frontend + dispatcher</td></tr>
+    <tr><td>Front-end</td><td>ui.frontend only (faster)</td></tr>
+    <tr><td>Config</td><td>Dispatcher and CDN configuration</td></tr>
+  </table>
+
+  <h3>Pipeline Stages</h3>
+  <ul>
+    <li>Build &rarr; Code Quality (SonarQube) &rarr; Security Scan &rarr; Deploy</li>
+    <li>Quality gates must pass before deployment proceeds</li>
+    <li>Custom test rules can be added</li>
+  </ul>
+
+  <h3>Environment Types</h3>
+  <table>
+    <tr><th>Environment</th><th>Purpose</th></tr>
+    <tr><td>Dev</td><td>Development and testing</td></tr>
+    <tr><td>Stage</td><td>Pre-production validation</td></tr>
+    <tr><td>Prod</td><td>Live production</td></tr>
+    <tr><td>RDE</td><td>Rapid Development &mdash; quick testing</td></tr>
+  </table>
+
+  <ul>
+    <li>Content copy between environments supported</li>
+    <li>All config, code, and dispatcher in Git repo</li>
+    <li>Blue-green deployments for zero downtime</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Pipeline: build &rarr; code quality &rarr; security &rarr; deploy</li>
+      <li>Full-stack, front-end, and config pipeline types</li>
+      <li>RDE = Rapid Development Environment for quick iteration</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 22: CONTEXT-AWARE CONFIGURATION                                   -->
+<!-- ========================================================================= -->
+<div class="section-card border-blue" id="sec22" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">22</span> Context-Aware Configuration</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>What is CAConfig?</h3>
+  <ul>
+    <li>Configuration that varies by content path</li>
+    <li>Buckets stored at <code>/conf/mysite/sling:configs</code></li>
+    <li><code>@ContextAwareConfiguration</code> annotation on config interface</li>
+  </ul>
+
+  <h3>Inheritance</h3>
+  <ul>
+    <li>Cascades from <code>/conf/global</code> &rarr; site-level &rarr; page-level</li>
+    <li>More specific config overrides global</li>
+    <li>Access: <code>resource.adaptTo(ConfigurationBuilder.class)</code></li>
+  </ul>
+
+  <h3>Use Cases</h3>
+  <ul>
+    <li>Social media config per site</li>
+    <li>Analytics tracking IDs per region</li>
+    <li>API endpoints per environment/site</li>
+    <li>Feature flags per content tree</li>
+  </ul>
+
+  <h3>Code Example</h3>
+<pre><code>@ContextAwareConfiguration
+public @interface SocialConfig {
+    @Property(label = "Facebook App ID")
+    String facebookAppId() default "";
+
+    @Property(label = "Twitter Handle")
+    String twitterHandle() default "";
+}
+
+// Usage in Sling Model:
+ConfigurationBuilder cfgBuilder =
+    resource.adaptTo(ConfigurationBuilder.class);
+SocialConfig config =
+    cfgBuilder.as(SocialConfig.class);</code></pre>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>CAConfig = configuration that varies by content path</li>
+      <li>Inheritance: /conf/global &rarr; site &rarr; page (most specific wins)</li>
+      <li>Access via resource.adaptTo(ConfigurationBuilder.class)</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 23: SCHEDULERS, EVENTS & JOBS                                     -->
+<!-- ========================================================================= -->
+<div class="section-card border-purple" id="sec23" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">23</span> Schedulers, Events &amp; Jobs</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>OSGi Scheduler</h3>
+  <ul>
+    <li><code>@Component</code> with <code>scheduler.expression</code> (cron syntax)</li>
+    <li>Or use Scheduler service API: <code>scheduler.schedule()</code></li>
+    <li>Runs on all cluster nodes unless configured otherwise</li>
+  </ul>
+
+  <h3>Sling Jobs (Preferred for Reliability)</h3>
+  <ul>
+    <li>Guaranteed execution with retry</li>
+    <li>Clustering-safe &mdash; executed on exactly one node</li>
+    <li><code>JobManager.addJob(topic, properties)</code></li>
+    <li><code>JobConsumer</code>: process jobs by topic</li>
+  </ul>
+
+  <h3>Event Handling</h3>
+  <table>
+    <tr><th>Mechanism</th><th>Use Case</th></tr>
+    <tr><td>OSGi EventHandler</td><td>React to OSGi events (fire-and-forget)</td></tr>
+    <tr><td>JCR Observation</td><td>ObservationManager, EventListener on node changes</td></tr>
+    <tr><td>ResourceChangeListener</td><td>Modern Sling approach for resource changes</td></tr>
+    <tr><td>Sling Jobs</td><td>Guaranteed processing with retry</td></tr>
+  </table>
+
+  <h3>Scheduler Code Example</h3>
+<pre><code>@Component(service = Runnable.class, property = {
+    "scheduler.expression=0 0/5 * * * ?",
+    "scheduler.concurrent=false"
+})
+public class MyScheduler implements Runnable {
+    @Override
+    public void run() {
+        // runs every 5 minutes
+    }
+}</code></pre>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Sling Jobs = guaranteed execution + retry + cluster-safe</li>
+      <li>Scheduler = cron-based; runs on all nodes by default</li>
+      <li>ResourceChangeListener = modern Sling approach for observing changes</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 24: REST APIs & INTEGRATIONS                                      -->
+<!-- ========================================================================= -->
+<div class="section-card border-orange" id="sec24" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">24</span> REST APIs &amp; Integrations</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Built-in APIs</h3>
+  <table>
+    <tr><th>API</th><th>Purpose</th></tr>
+    <tr><td>Sling GET Servlet</td><td>JSON rendering of JCR nodes (.json extension)</td></tr>
+    <tr><td>Sling POST Servlet</td><td>Create/modify/delete nodes via POST</td></tr>
+    <tr><td>Assets HTTP API</td><td><code>/api/assets/mysite</code> for CRUD operations</td></tr>
+    <tr><td>GraphQL API</td><td>Content Fragment delivery</td></tr>
+  </table>
+
+  <h3>Custom Servlets</h3>
+  <ul>
+    <li>Register under <code>/bin/</code> for custom endpoints</li>
+    <li>Always validate input, set content type, return JSON errors</li>
+  </ul>
+
+  <h3>HTTP Client Pattern</h3>
+<pre><code>// Apache HttpClient 4.x
+RequestConfig config = RequestConfig.custom()
+    .setConnectTimeout(5000)
+    .setSocketTimeout(10000)
+    .build();
+try (CloseableHttpClient client =
+        HttpClients.custom()
+            .setDefaultRequestConfig(config)
+            .build()) {
+    HttpGet get = new HttpGet(url);
+    try (CloseableHttpResponse resp =
+            client.execute(get)) {
+        // process response
+    }
+}</code></pre>
+
+  <h3>Integration Patterns</h3>
+  <ul>
+    <li>Outbound HTTP calls from OSGi services</li>
+    <li>Webhooks for event-driven integrations</li>
+    <li>Adobe I/O Events for cloud-based event processing</li>
+    <li>Always set timeouts, close resources, handle errors</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Sling GET/POST servlets provide built-in JCR CRUD</li>
+      <li>Assets HTTP API at /api/assets for asset CRUD</li>
+      <li>Always set connect + socket timeouts on HTTP clients</li>
+      <li>Close HttpClient and HttpResponse in try-with-resources</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 25: AEM FORMS                                                     -->
+<!-- ========================================================================= -->
+<div class="section-card border-green" id="sec25" data-section>
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="sec-num">25</span> AEM Forms (Overview)</h2>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+
+  <h3>Adaptive Forms</h3>
+  <ul>
+    <li>Responsive, rule-based forms that adapt to device and data</li>
+    <li>Drag-and-drop form editor with field validation</li>
+    <li>Themes and templates for consistent styling</li>
+  </ul>
+
+  <h3>Form Data Model (FDM)</h3>
+  <ul>
+    <li>Connect forms to backend data sources</li>
+    <li>Supports REST, SOAP, and database (JDBC)</li>
+    <li>Pre-fill services: auto-populate fields from data source</li>
+  </ul>
+
+  <h3>Document Services</h3>
+  <table>
+    <tr><th>Service</th><th>Purpose</th></tr>
+    <tr><td>Output Service</td><td>PDF generation from templates + data</td></tr>
+    <tr><td>Document Assurance</td><td>Digital signatures, encryption</td></tr>
+    <tr><td>Assembler</td><td>Merge/split PDF documents</td></tr>
+  </table>
+
+  <h3>Submit Actions</h3>
+  <ul>
+    <li>Submit to REST endpoint</li>
+    <li>Send email with attachments</li>
+    <li>Invoke AEM workflow</li>
+    <li>Submit to Form Data Model (write back to data source)</li>
+    <li>Store in JCR (forms portal)</li>
+  </ul>
+
+  <div class="key-recall">
+    <p class="kr-title">Key Recall</p>
+    <ul>
+      <li>Adaptive Forms = responsive, rule-based, drag-and-drop editor</li>
+      <li>FDM connects forms to REST/SOAP/DB backends</li>
+      <li>Document Services: PDF generation, signing, assembly</li>
+      <li>Submit actions: REST, email, workflow, FDM write-back</li>
+    </ul>
+  </div>
+
+  </div></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- FLASHCARDS SECTION                                                        -->
+<!-- ========================================================================= -->
+<div class="flashcard-section" id="flashcards">
+  <h2><span class="sec-num" style="font-size:12px;">&#9889;</span> Quick Quiz Flashcards</h2>
+  <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;">Click a card to flip it. Test yourself on 30 critical AEM interview facts.</p>
+  <div class="flashcard-controls">
+    <button class="toolbar-btn" id="shuffleBtn">Shuffle</button>
+    <button class="toolbar-btn" id="resetCardsBtn">Reset All</button>
+    <span class="flashcard-counter" id="flashcardCounter">0 / 30 flipped</span>
+  </div>
+  <div class="flashcard-grid" id="flashcardGrid">
+    <!-- Cards generated by JS -->
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <img src="sg-logo.png" alt="SG" class="footer-logo">
+  <div class="footer-brand">AEM Interview Cheat Sheet</div>
+  <div class="footer-sub">25 Topics &bull; 30 Flashcards &bull; Searchable &bull; Interactive</div>
+  <div class="footer-links">
+    <a href="AEM_interview_live.html" class="footer-link">&#128218; Full Interactive Guide</a>
+    <a href="AEM-cheat-sheet.html" class="footer-link">&#128203; Cheat Sheet</a>
+  </div>
+  <div class="footer-copy">Created with <span class="heart">&#9829;</span> by <strong>Sumit Gaidhani</strong> &bull; September 2026</div>
+</footer>
+
+</div><!-- /.page -->
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+(function() {
+  'use strict';
+
+  // ============================================================
+  // THEME TOGGLE
+  // ============================================================
+  var toggle = document.getElementById('themeToggle');
+  var themeIcon = document.getElementById('themeIcon');
+  var html = document.documentElement;
+
+  function getStored(key) {
+    try { return localStorage.getItem(key); } catch(e) { return null; }
+  }
+  function setStored(key, val) {
+    try { localStorage.setItem(key, val); } catch(e) {}
+  }
+
+  function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    themeIcon.innerHTML = theme === 'dark' ? '&#9728;' : '&#9790;';
+  }
+
+  var saved = getStored('aem-cheat-theme');
+  if (saved) applyTheme(saved);
+  else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
+  else applyTheme('light');
+
+  toggle.addEventListener('click', function() {
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    setStored('aem-cheat-theme', next);
+  });
+
+  // ============================================================
+  // SECTION ACCORDION
+  // ============================================================
+  var allSections = document.querySelectorAll('[data-section]');
+  var TOTAL = allSections.length;
+
+  function toggleSection(headerEl) {
+    var card = headerEl.closest('.section-card');
+    if (!card) return;
+    card.classList.toggle('open');
+    updateProgress();
+  }
+  window.toggleSection = toggleSection;
+
+  // Default: first 3 open
+  for (var i = 0; i < allSections.length; i++) {
+    if (i < 3) allSections[i].classList.add('open');
+  }
+
+  // ============================================================
+  // EXPAND / COLLAPSE ALL
+  // ============================================================
+  document.getElementById('expandAllBtn').addEventListener('click', function() {
+    for (var i = 0; i < allSections.length; i++) {
+      if (allSections[i].style.display !== 'none') {
+        allSections[i].classList.add('open');
+      }
+    }
+    updateProgress();
+  });
+
+  document.getElementById('collapseAllBtn').addEventListener('click', function() {
+    for (var i = 0; i < allSections.length; i++) {
+      allSections[i].classList.remove('open');
+    }
+    updateProgress();
+  });
+
+  // ============================================================
+  // PROGRESS TRACKER
+  // ============================================================
+  var progressFill = document.getElementById('progressFill');
+  var progressText = document.getElementById('progressText');
+  var readSections = {};
+
+  // Load from localStorage
+  var storedRead = getStored('aem-cheat-read');
+  if (storedRead) {
+    try { readSections = JSON.parse(storedRead); } catch(e) { readSections = {}; }
+  }
+
+  function updateProgress() {
+    // Mark open sections as read
+    for (var i = 0; i < allSections.length; i++) {
+      if (allSections[i].classList.contains('open')) {
+        readSections[allSections[i].id] = true;
+      }
+    }
+    setStored('aem-cheat-read', JSON.stringify(readSections));
+
+    var count = 0;
+    for (var key in readSections) {
+      if (readSections[key]) count++;
+    }
+    if (count > TOTAL) count = TOTAL;
+    var pct = Math.round((count / TOTAL) * 100);
+    progressFill.style.width = pct + '%';
+    progressText.textContent = count + ' / ' + TOTAL + ' read';
+  }
+  updateProgress();
+
+  // ============================================================
+  // SEARCH / FILTER
+  // ============================================================
+  var searchInput = document.getElementById('searchInput');
+  var noResults = document.getElementById('noResults');
+
+  searchInput.addEventListener('input', function() {
+    var term = this.value.toLowerCase().trim();
+    var visibleCount = 0;
+
+    for (var i = 0; i < allSections.length; i++) {
+      var sec = allSections[i];
+      if (!term) {
+        sec.style.display = '';
+        visibleCount++;
+      } else {
+        var text = sec.textContent.toLowerCase();
+        if (text.indexOf(term) !== -1) {
+          sec.style.display = '';
+          visibleCount++;
+        } else {
+          sec.style.display = 'none';
+        }
+      }
+    }
+
+    if (visibleCount === 0 && term) {
+      noResults.classList.add('visible');
+    } else {
+      noResults.classList.remove('visible');
+    }
+  });
+
+  // ============================================================
+  // TOC PILLS: click to scroll
+  // ============================================================
+  var tocPills = document.querySelectorAll('.toc-pill');
+  for (var p = 0; p < tocPills.length; p++) {
+    tocPills[p].addEventListener('click', function() {
+      var targetId = this.getAttribute('data-target');
+      var el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // If section is collapsed, open it
+        if (!el.classList.contains('open') && el.hasAttribute('data-section')) {
+          el.classList.add('open');
+          updateProgress();
+        }
+      }
+    });
+  }
+
+  // ============================================================
+  // TOC PILL HIGHLIGHTING ON SCROLL
+  // (NO scrollIntoView inside scroll listener)
+  // ============================================================
+  var sectionIds = [];
+  var sectionEls = [];
+  for (var s = 0; s < allSections.length; s++) {
+    sectionIds.push(allSections[s].id);
+    sectionEls.push(allSections[s]);
+  }
+  // Add flashcards
+  var fcEl = document.getElementById('flashcards');
+  if (fcEl) {
+    sectionIds.push('flashcards');
+    sectionEls.push(fcEl);
+  }
+
+  var tocScrollContainer = document.getElementById('tocScroll');
+  var pillMap = {};
+  for (var tp = 0; tp < tocPills.length; tp++) {
+    pillMap[tocPills[tp].getAttribute('data-target')] = tocPills[tp];
+  }
+
+  var scrollTicking = false;
+  function onScroll() {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(function() {
+      var activeIdx = -1;
+      for (var i = 0; i < sectionEls.length; i++) {
+        if (sectionEls[i].style.display === 'none') continue;
+        var rect = sectionEls[i].getBoundingClientRect();
+        if (rect.top <= 180) {
+          activeIdx = i;
+        }
+      }
+
+      var activeId = activeIdx >= 0 ? sectionIds[activeIdx] : null;
+
+      for (var j = 0; j < tocPills.length; j++) {
+        var target = tocPills[j].getAttribute('data-target');
+        if (target === activeId) {
+          tocPills[j].classList.add('active');
+        } else {
+          tocPills[j].classList.remove('active');
+        }
+      }
+
+      // Scroll active pill into view (horizontal only, direct scrollLeft)
+      if (activeId && pillMap[activeId] && tocScrollContainer) {
+        var pill = pillMap[activeId];
+        var pillLeft = pill.offsetLeft;
+        var pillWidth = pill.offsetWidth;
+        var barWidth = tocScrollContainer.offsetWidth;
+        tocScrollContainer.scrollLeft = pillLeft - (barWidth / 2) + (pillWidth / 2);
+      }
+
+      // Show/hide progress text
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollY > 200) {
+        progressText.classList.add('visible');
+      } else {
+        progressText.classList.remove('visible');
+      }
+
+      // Show/hide scroll-to-top button
+      var scrollTopBtn = document.getElementById('scrollTopBtn');
+      if (scrollY > 400) {
+        scrollTopBtn.classList.add('visible');
+      } else {
+        scrollTopBtn.classList.remove('visible');
+      }
+
+      scrollTicking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ============================================================
+  // SCROLL TO TOP
+  // ============================================================
+  document.getElementById('scrollTopBtn').addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ============================================================
+  // FLASHCARDS
+  // ============================================================
+  var flashcardData = [
+    { q: "What are AEM's three technology pillars?", a: "Apache Sling + JCR (Jackrabbit Oak) + OSGi (Apache Felix)" },
+    { q: "What port does AEM Author run on by default?", a: "4502 (Publish = 4503)" },
+    { q: "What annotation marks an OSGi config?", a: "@ObjectClassDefinition with @Designate(ocd=...)" },
+    { q: "How do you include a clientlib in HTL?", a: "data-sly-use.clientlib then data-sly-call=\"${clientlib.all @ categories='mysite.page'}\"" },
+    { q: "What's the preferred query language in AEM?", a: "JCR-SQL2 (or QueryBuilder for REST API access)" },
+    { q: "What is the Sling Resource Merger?", a: "/apps overlays /libs -- allows customization without modifying /libs" },
+    { q: "CF vs XF difference?", a: "CF = structured data (headless). XF = visual component groups (rendered)." },
+    { q: "Name the AEMaaCS mutable paths", a: "/content, /conf, /var, /tmp, /home" },
+    { q: "What is a transient workflow?", a: "Workflow that doesn't persist full history -- used for DAM for better performance" },
+    { q: "How to prevent XSS in AEM?", a: "HTL auto-escapes with context='html' (default). Use proper display contexts." },
+    { q: "What are the OSGi bundle lifecycle states?", a: "INSTALLED -> RESOLVED -> STARTING -> ACTIVE -> STOPPING -> UNINSTALLED" },
+    { q: "What does @ValueMapValue inject?", a: "A JCR property value from the resource's ValueMap" },
+    { q: "What is the Dispatcher?", a: "Apache module providing caching + load balancing + security filtering in front of AEM Publish" },
+    { q: "How to create a custom workflow step?", a: "Implement WorkflowProcess.execute(WorkItem, WorkflowSession, MetaDataMap)" },
+    { q: "What is a proxy component?", a: "Component in /apps with sling:resourceSuperType pointing to a Core Component -- keeps upgrade path intact" },
+    { q: "What is statfileslevel?", a: "Controls Dispatcher invalidation granularity -- higher = more targeted invalidation" },
+    { q: "How do you get a service ResourceResolver?", a: "resolverFactory.getServiceResourceResolver(authInfo) with service user mapping" },
+    { q: "What is the Style System?", a: "Add CSS classes to components via template policies without code changes" },
+    { q: "Name three Sling Model injection annotations", a: "@ValueMapValue, @ChildResource, @OSGiService, @Self, @ResourcePath, @ScriptVariable" },
+    { q: "What replaces DAM Update Asset workflow in AEMaaCS?", a: "Asset Compute microservices" },
+    { q: "What is GraphQL used for in AEM?", a: "Querying and delivering Content Fragment data for headless use cases" },
+    { q: "What are persisted queries?", a: "Pre-defined GraphQL queries stored server-side, GET-accessible, cached at Dispatcher/CDN" },
+    { q: "What is MSM in AEM?", a: "Multi-Site Manager: Blueprint (source) + Live Copy (target) with rollout configs for content reuse" },
+    { q: "What is CUG?", a: "Closed User Group -- restricts page access to specific user groups" },
+    { q: "What is the difference between embed and dependencies in clientlibs?", a: "Embed merges into a single file (fewer requests). Dependencies maintain separate requests with load order." },
+    { q: "What is Context-Aware Configuration?", a: "Configuration that varies by content path -- inherits from /conf/global to site to page level" },
+    { q: "What are Sling Jobs used for?", a: "Guaranteed execution with retry, clustering-safe -- preferred for reliable background processing" },
+    { q: "What is Edge Delivery Services?", a: "Document-based authoring (Google Docs/SharePoint) with Git-based content delivery at CDN edge for Lighthouse 100 scores" },
+    { q: "How does service ranking work in OSGi?", a: "Higher ranking = higher priority. Set via service.ranking:Integer property. Default is 0." },
+    { q: "What is the Universal Editor?", a: "Visual editing interface for both headless and hybrid content in AEMaaCS + Edge Delivery Services" }
+  ];
+
+  var flashcardGrid = document.getElementById('flashcardGrid');
+  var flashcardCounter = document.getElementById('flashcardCounter');
+  var currentCards = flashcardData.slice();
+  var flippedCount = 0;
+
+  function renderFlashcards(cards) {
+    flashcardGrid.innerHTML = '';
+    flippedCount = 0;
+    updateFlipCounter();
+    for (var i = 0; i < cards.length; i++) {
+      var card = document.createElement('div');
+      card.className = 'flashcard';
+      card.setAttribute('data-idx', i);
+      card.innerHTML =
+        '<div class="flashcard-inner">' +
+          '<div class="flashcard-front">' +
+            '<span class="flashcard-label">Q' + (i + 1) + '</span>' +
+            '<span>' + cards[i].q + '</span>' +
+          '</div>' +
+          '<div class="flashcard-back">' +
+            '<span class="flashcard-label">Answer</span>' +
+            '<span>' + cards[i].a + '</span>' +
+          '</div>' +
+        '</div>';
+      card.addEventListener('click', function() {
+        var wasFlipped = this.classList.contains('flipped');
+        this.classList.toggle('flipped');
+        if (!wasFlipped) {
+          flippedCount++;
+        } else {
+          flippedCount--;
+        }
+        updateFlipCounter();
+      });
+      flashcardGrid.appendChild(card);
+    }
+  }
+
+  function updateFlipCounter() {
+    flashcardCounter.textContent = flippedCount + ' / ' + currentCards.length + ' flipped';
+  }
+
+  function shuffleArray(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i];
+      a[i] = a[j];
+      a[j] = t;
+    }
+    return a;
+  }
+
+  document.getElementById('shuffleBtn').addEventListener('click', function() {
+    currentCards = shuffleArray(currentCards);
+    renderFlashcards(currentCards);
+  });
+
+  document.getElementById('resetCardsBtn').addEventListener('click', function() {
+    var cards = document.querySelectorAll('.flashcard');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].classList.remove('flipped');
+    }
+    flippedCount = 0;
+    updateFlipCounter();
+  });
+
+  renderFlashcards(currentCards);
+
+})();
+</script>
+
+</body>
+</html>
