@@ -10413,7 +10413,7 @@ if(isTopicLocked(tid)){item.classList.add('locked-topic');if(!item.querySelector
 else{item.classList.remove('locked-topic');var dt=item.querySelector('.nav-pro-dot');if(dt)dt.remove();}
 });
 var badge=document.getElementById('proBadge');
-if(isProUser()){if(!badge){var sb=document.querySelector('.sidebar-header .sub');if(sb){sb.innerHTML='62 topics &middot; 544 interactive MCQs <span class="pro-badge" id="proBadge">PRO</span>';}}}
+if(isProUser()){if(!badge){var sb=document.querySelector('.sidebar-header .sub');if(sb){sb.innerHTML='62 topics &middot; 544 interactive MCQs <span class="pro-badge" id="proBadge">PRO</span>';}var mh=document.querySelector('.mobile-header .mh-text h1');if(mh&&!document.getElementById('mobileProBadge')){mh.innerHTML='AEM Interview Prep <span class="pro-badge" id="mobileProBadge" style="font-size:8px;padding:2px 6px;vertical-align:middle;">PRO</span>';}}}
 else{if(badge)badge.remove();}
 }
 
