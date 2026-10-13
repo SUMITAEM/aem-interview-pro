@@ -211,6 +211,52 @@ tr:nth-child(even) td{background:var(--bg);}
 .mobile-nav-overlay.open{display:block;}
 @media(max-width:860px){.mobile-header{display:flex;}.hamburger-btn{display:flex;}.theme-toggle{top:10px;right:104px;z-index:99998;}.mobile-user-fab{top:10px;right:62px;z-index:99998;}.sidebar{display:none;}.app{flex-direction:column;}.main{padding:70px 16px 80px 16px;margin-left:0;}.stat-grid{grid-template-columns:1fr;}.sidebar-user{display:none!important;}.mobile-user-fab{display:block!important;}.scenario-q{padding:14px 10px;gap:8px;}.scenario-a{padding:0 10px 0 36px;}.scenario-a.open{padding:0 10px 14px 36px;}.scenario-q .sq-arrow{width:20px;height:20px;font-size:10px;}.scenario-q .sq-text{font-size:14px;}.chat-panel{position:fixed!important;top:56px!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;border-radius:0!important;border:none!important;z-index:99992;background:var(--panel);display:none;flex-direction:column;overflow:hidden;}.chat-panel.open{display:flex;}.chat-messages{flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch;}.chat-input-area{padding:12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;flex-shrink:0;border-top:1px solid var(--line);background:var(--panel);}.chat-fab{bottom:20px;right:14px;width:46px;height:46px;font-size:20px;z-index:99993;}.mobile-nav-drawer{display:block;}}
 @media(max-width:860px){.mobile-header .theme-toggle{position:static;top:auto;right:auto;width:32px;height:32px;flex-shrink:0;}.mobile-header .mobile-user-fab{position:static;top:auto;right:auto;flex-shrink:0;}}
+@media(max-width:480px){
+.aem-lifecycle-widget{padding:0.8rem;}
+.aem-lifecycle-widget .lw-stage{height:180px;}
+.aem-lifecycle-widget .lw-node-icon{width:36px;height:36px;border-radius:10px;}
+.aem-lifecycle-widget .lw-node-icon svg{width:18px;height:18px;}
+.aem-lifecycle-widget .lw-node-label{font-size:0.55rem;}
+.aem-lifecycle-widget .lw-node-ripple{width:36px;height:36px;border-radius:10px;}
+.aem-lifecycle-widget #lw-node-browser{left:1%;}
+.aem-lifecycle-widget #lw-node-dispatcher{left:18%;}
+.aem-lifecycle-widget #lw-node-cache{left:34%;top:2%;}
+.aem-lifecycle-widget #lw-node-publish{left:50%;}
+.aem-lifecycle-widget #lw-node-author{left:78%;}
+.aem-lifecycle-widget .lw-controls{flex-wrap:wrap;gap:6px;}
+.aem-lifecycle-widget .lw-controls button{font-size:0.65rem;padding:5px 10px;}
+.aem-lifecycle-widget .lw-info-box{font-size:0.7rem;padding:8px 10px;min-height:auto;}
+.repl-widget{padding:0.8rem;}
+.repl-widget .rw-stage{height:180px;}
+.repl-widget .rw-node-icon{width:36px;height:36px;border-radius:10px;}
+.repl-widget .rw-node-icon svg{width:18px;height:18px;}
+.repl-widget .rw-node-label{font-size:0.55rem;}
+.repl-widget .rw-node-sublabel{display:none;}
+.repl-widget .rw-node-ripple{width:36px;height:36px;border-radius:10px;}
+.repl-widget .rw-controls{flex-wrap:wrap;gap:6px;}
+.repl-widget .rw-controls button{font-size:0.65rem;padding:5px 10px;}
+.repl-widget .rw-info-box{font-size:0.7rem;padding:8px 10px;min-height:auto;}
+.ca-widget{padding:0.8rem;}
+.ca-widget .ca-panels{flex-direction:column;}
+.ca-widget .ca-code-panel{max-height:200px;}
+.wf-widget{padding:0.8rem;}
+.wf-widget .wf-stage{height:200px;}
+.sm-widget{padding:0.8rem;}
+.sm-widget .sm-stage{height:200px;}
+.rr-widget{padding:0.8rem;}
+.jcr-tree-widget{padding:0.8rem;}
+.osgi-sm{padding:0.8rem;}
+.lcp-widget{padding:0.8rem;}
+.lcp-widget .lc-tabs{flex-wrap:wrap;}
+.cicd-widget{padding:0.8rem;}
+.cicd-widget .ci-stages{flex-wrap:wrap;gap:4px;}
+.migr-widget{padding:0.8rem;}
+.disp-filter-widget{padding:0.8rem;}
+table{font-size:11px;}
+th,td{padding:5px 6px;}
+pre{font-size:11px;padding:10px 12px;}
+.diagram{font-size:10px;padding:10px 12px;}
+}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important;}}
 .chat-fab{position:fixed;bottom:60px;right:20px;z-index:99990;width:52px;height:52px;border-radius:50%;border:none;background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(8,145,178,0.4);transition:transform 0.2s,box-shadow 0.2s;}
 .chat-fab:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(8,145,178,0.6);}
@@ -313,8 +359,11 @@ Sign in with Google
 <input type="password" id="loginPassword" placeholder="Password (min 6 characters)" required minlength="6">
 <button type="submit" class="login-submit-btn" id="emailSubmitBtn">Sign In</button>
 </form>
+<div id="termsCheckArea" style="display:none;margin:10px 0;text-align:left;"><label style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#94a3b8;cursor:pointer;"><input type="checkbox" id="termsCheck" style="margin-top:2px;flex-shrink:0;"><span>I agree to the <a onclick="showTermsModal()" style="color:#22d3ee;cursor:pointer;">Terms of Service</a> and <a onclick="showTermsModal()" style="color:#22d3ee;cursor:pointer;">Privacy Policy</a></span></label></div>
+<p class="login-toggle"><a onclick="forgotPassword()" style="cursor:pointer;">Forgot Password?</a></p>
 <p class="login-toggle" id="authToggle">Don't have an account? <a onclick="toggleAuthMode()">Sign Up</a></p>
 <p class="login-error" id="loginError"></p>
+<p class="login-success" id="loginSuccess" style="color:#059669;font-size:12px;margin-top:8px;"></p>
 </div>
 </div>
 
@@ -381,7 +430,8 @@ Sign in with Google
 <div class="user-name" id="userName">User</div>
 <div class="user-email" id="userEmail">email</div>
 </div>
-<button class="logout-btn" onclick="signOutUser()">Logout</button>
+<div style="display:flex;gap:6px;margin-top:4px;"><button class="logout-btn" onclick="changePassword()" style="flex:1;">Change Password</button><button class="logout-btn" onclick="signOutUser()" style="flex:1;">Logout</button></div>
+<button class="logout-btn" onclick="deleteAccount()" style="margin-top:4px;width:100%;border-color:rgba(220,38,38,0.3);color:#64748b;font-size:9px;">Delete Account</button>
 </div>
 </nav>
 <main class="main" id="mainContent"></main>
@@ -9983,7 +10033,9 @@ showTopic('t1');updateScorePills();updateProgressBar();
 <div class="mobile-user-dropdown" id="mobileUserDropdown">
 <div class="mu-name" id="mobileUserName">User</div>
 <div class="mu-email" id="mobileUserEmail">email</div>
-<button class="mu-logout" onclick="signOutUser()">&#x2192; Sign Out</button>
+<button class="mu-logout" onclick="changePassword()" style="margin-bottom:6px;">&#128273; Change Password</button>
+<button class="mu-logout" onclick="signOutUser()" style="margin-bottom:6px;">&#x2192; Sign Out</button>
+<button class="mu-logout" onclick="deleteAccount()" style="font-size:11px;color:#94a3b8;border-color:rgba(220,38,38,0.2);">&#128465; Delete Account</button>
 </div>
 
 <!-- Feedback Modal -->
@@ -10008,7 +10060,7 @@ showTopic('t1');updateScorePills();updateProgressBar();
 
 <div id="siteFooter" style="position:fixed;bottom:0;left:280px;right:0;background:var(--panel);color:var(--ink-soft);text-align:center;padding:7px 16px;font-size:11px;font-family:var(--mono);letter-spacing:0.5px;border-top:1px solid var(--line);z-index:9999;box-shadow:0 -2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
 <span style="display:flex;align-items:center;gap:6px;"><img src="sg-logo.png" alt="SG" style="width:22px;height:22px;border-radius:4px;flex-shrink:0;"><span>Created by Sumit Gaidhani | AEM Developer</span></span>
-<span style="opacity:0.5;font-size:10px;">Not affiliated with Adobe Inc.</span>
+<span style="opacity:0.5;font-size:10px;">Not affiliated with Adobe Inc. · <a onclick="showTermsModal()" style="color:inherit;cursor:pointer;text-decoration:underline;">Terms & Privacy</a></span>
 </div>
 
 <!-- Firebase SDK (placed before </body> so page HTML renders first) -->
@@ -10225,6 +10277,7 @@ function handleEmailAuth(e) {
   clearLoginError();
 
   if (isSignUpMode) {
+    if (!document.getElementById('termsCheck').checked) { btn.disabled = false; showLoginError('Please agree to the Terms of Service and Privacy Policy'); return; }
     auth.createUserWithEmailAndPassword(email, password)
       .then(function() { btn.disabled = false; trackLogin('email_signup'); })
       .catch(function(error) {
@@ -10250,12 +10303,105 @@ function toggleAuthMode() {
   document.getElementById('authToggle').innerHTML = isSignUpMode
     ? 'Already have an account? <a onclick="toggleAuthMode()">Sign In</a>'
     : 'Don\'t have an account? <a onclick="toggleAuthMode()">Sign Up</a>';
+  document.getElementById('termsCheckArea').style.display = isSignUpMode ? 'block' : 'none';
   clearLoginError();
 }
 
 // ========== SIGN OUT ==========
 function signOutUser() {
   auth.signOut();
+}
+
+function forgotPassword() {
+  var email = document.getElementById('loginEmail').value.trim();
+  if (!email) { showLoginError('Enter your email address first, then click Forgot Password'); return; }
+  auth.sendPasswordResetEmail(email).then(function() {
+    clearLoginError();
+    document.getElementById('loginSuccess').textContent = 'Password reset email sent to ' + email + '. Check your inbox.';
+  }).catch(function(error) {
+    showLoginError(error.message);
+  });
+}
+
+function changePassword() {
+  var user = auth.currentUser;
+  if (!user || !user.email) { alert('You are not signed in.'); return; }
+  var providerIds = user.providerData.map(function(p) { return p.providerId; });
+  if (providerIds.indexOf('password') === -1) {
+    alert('You signed in with Google. Password is managed by your Google account at myaccount.google.com.');
+    return;
+  }
+  if (confirm('Send password reset email to ' + user.email + '?')) {
+    auth.sendPasswordResetEmail(user.email).then(function() {
+      alert('Password reset email sent to ' + user.email + '. Check your inbox and follow the link to set a new password.');
+    }).catch(function(error) {
+      alert('Failed: ' + error.message);
+    });
+  }
+}
+
+// ========== DELETE ACCOUNT ==========
+function deleteAccount() {
+  var user = auth.currentUser;
+  if (!user) return;
+  if (!confirm('Are you sure you want to delete your account?\n\nThis will:\n- Delete your profile data\n- Remove your login history\n- This action CANNOT be undone.')) return;
+  if (!confirm('FINAL CONFIRMATION: Type your email to confirm deletion.\n\nThis is permanent and cannot be reversed.')) return;
+  var confirmEmail = prompt('Type your email address to confirm:');
+  if (confirmEmail !== user.email) { alert('Email does not match. Account NOT deleted.'); return; }
+  db.collection('users').doc(user.uid).delete().then(function() {
+    return user.delete();
+  }).then(function() {
+    alert('Your account has been deleted successfully.');
+    location.reload();
+  }).catch(function(error) {
+    if (error.code === 'auth/requires-recent-login') {
+      alert('For security, please sign out and sign in again, then try deleting. Firebase requires a recent login for account deletion.');
+    } else {
+      alert('Failed to delete account: ' + error.message);
+    }
+  });
+}
+
+// ========== TERMS & PRIVACY MODAL ==========
+function showTermsModal() {
+  if (document.getElementById('termsOverlay')) return;
+  var ov = document.createElement('div');
+  ov.id = 'termsOverlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
+  ov.onclick = function(e) { if (e.target === ov) ov.remove(); };
+  ov.innerHTML = '<div style="background:var(--panel);border:1px solid var(--line);border-radius:16px;width:540px;max-width:calc(100vw - 32px);max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);">'
+    + '<div style="padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--panel);border-radius:16px 16px 0 0;z-index:1;"><h3 style="margin:0;font-size:18px;color:var(--ink);">Terms of Service & Privacy Policy</h3><button onclick="document.getElementById(\'termsOverlay\').remove()" style="background:none;border:none;color:var(--ink-soft);font-size:22px;cursor:pointer;">&times;</button></div>'
+    + '<div style="padding:20px 24px;font-size:13px;color:var(--ink-soft);line-height:1.8;">'
+    + '<h4 style="color:var(--ink);margin:0 0 8px;">1. About This Service</h4>'
+    + '<p>AEM Interview Preparation is an independent educational platform created by Sumit Gaidhani. It is not affiliated with, endorsed by, or sponsored by Adobe Inc.</p>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">2. Data We Collect</h4>'
+    + '<ul><li><strong>Email address</strong> — for authentication and account identification</li>'
+    + '<li><strong>Display name & profile photo</strong> — from Google sign-in (or email prefix for email users)</li>'
+    + '<li><strong>Login timestamps & count</strong> — to track usage</li>'
+    + '<li><strong>Quiz progress</strong> — stored in your browser (localStorage), not on our servers</li></ul>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">3. How We Use Your Data</h4>'
+    + '<ul><li>To authenticate you and provide access to the platform</li>'
+    + '<li>To track login activity for security (single-device enforcement)</li>'
+    + '<li>To improve the platform based on usage analytics (Google Analytics)</li>'
+    + '<li>We do NOT sell, share, or transfer your personal data to third parties</li></ul>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">4. Data Storage</h4>'
+    + '<p>Your data is stored securely in Google Firebase (Firestore). Firebase is SOC 2 and ISO 27001 certified. Data is encrypted in transit and at rest.</p>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">5. Your Rights</h4>'
+    + '<ul><li>You can <strong>view</strong> your stored data by signing in</li>'
+    + '<li>You can <strong>delete your account</strong> and all associated data at any time from the sidebar menu</li>'
+    + '<li>You can <strong>change your password</strong> at any time</li>'
+    + '<li>You can <strong>contact us</strong> via the feedback button for any data-related requests</li></ul>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">6. Cookies & Local Storage</h4>'
+    + '<p>We use browser localStorage to save quiz progress, bookmarks, and theme preference. No third-party tracking cookies are used. Google Analytics collects anonymous usage data.</p>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">7. Single-Device Policy</h4>'
+    + '<p>Only one active session per account is allowed. If your account is used on another device, your current session will be ended. This is to prevent unauthorized sharing.</p>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">8. Changes to This Policy</h4>'
+    + '<p>We may update these terms from time to time. Continued use of the platform after changes constitutes acceptance of the updated terms.</p>'
+    + '<h4 style="color:var(--ink);margin:16px 0 8px;">9. Contact</h4>'
+    + '<p>For questions about your data or these terms, use the "Send Feedback" button in the sidebar.</p>'
+    + '<p style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-soft);">Last updated: October 2026</p>'
+    + '</div></div>';
+  document.body.appendChild(ov);
 }
 
 // ========== ANALYTICS TRACKING ==========
@@ -10414,7 +10560,7 @@ var ov=document.createElement('div');
 ov.id='upgradeOverlay';ov.className='upgrade-overlay';
 ov.onclick=function(e){if(e.target===ov)closeUpgradeModal();};
 ov.innerHTML='<div class="upgrade-modal"><div class="upgrade-header" style="position:relative;"><button class="upgrade-close" onclick="closeUpgradeModal()">&times;</button><h3>&#128640; Upgrade to Pro</h3><p>Unlock all 62 topics, 544 MCQs, and 74 scenario questions</p></div><div class="upgrade-body">'
-+'<div class="upgrade-compare"><div class="upgrade-plan current"><h4>Free</h4><div class="plan-price" style="color:var(--ink-soft);">&#8377;0</div><div class="plan-detail">Current Plan</div><ul><li>15 topics</li><li>~100 MCQs</li><li>Chat assistant</li><li>Basic content only</li></ul></div><div class="upgrade-plan recommended"><h4>&#9733; Pro</h4><div class="plan-price" style="color:#d97706;">&#8377;499</div><div class="plan-detail">One-time payment</div><ul><li>All 62 topics</li><li>544 MCQs</li><li>74 scenario questions</li><li>Interactive widgets</li><li>Future updates free</li></ul></div></div>'
++'<div class="upgrade-compare"><div class="upgrade-plan current"><h4>Free</h4><div class="plan-price" style="color:var(--ink-soft);">&#8377;0</div><div class="plan-detail">Current Plan</div><ul><li>15 topics</li><li>~100 MCQs</li><li>Chat assistant</li><li>Basic content only</li></ul></div><div class="upgrade-plan recommended"><h4>&#9733; Pro</h4><div class="plan-price" style="color:#d97706;">&#8377;99<span style="font-size:12px;font-weight:400;">/month</span></div><div class="plan-detail">30 days access</div><ul><li>All 62 topics</li><li>544 MCQs</li><li>74 scenario questions</li><li>50 flashcards</li><li>Interactive widgets</li><li>Cancel anytime</li></ul></div></div>'
 +'<button class="upgrade-btn coming-soon" onclick="void(0)">&#128274; Coming Soon — Payment Integration</button>'
 +'<p style="text-align:center;font-size:11px;color:var(--ink-soft);margin-top:12px;">Payment via UPI, Cards, NetBanking — powered by Razorpay</p>'
 +'</div></div>';
