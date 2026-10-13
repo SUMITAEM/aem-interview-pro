@@ -441,6 +441,7 @@ Sign in with Google
 <span class="user-menu-arrow">&#9650;</span>
 </div>
 <div class="sidebar-user-dropdown" id="sidebarUserDropdown">
+<button class="sud-item" id="sudInstallApp" onclick="installPWA()" style="display:none;">&#128241; Install App</button>
 <button class="sud-item" onclick="changePassword()">&#128273; Change Password</button>
 <button class="sud-item" onclick="signOutUser()">&#x2192; Sign Out</button>
 <div class="sud-divider"></div>
@@ -10774,6 +10775,10 @@ var deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
+  var installBtn = document.getElementById('sudInstallApp');
+  if (installBtn) installBtn.style.display = '';
+  // Show banner only on mobile (width <= 860px)
+  if (window.innerWidth > 860) return;
   setTimeout(function() {
     if (!deferredPrompt) return;
     var banner = document.createElement('div');
