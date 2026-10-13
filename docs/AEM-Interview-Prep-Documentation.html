@@ -316,7 +316,7 @@ hr {
       <tr><td>Interactive Widgets</td><td>58 interactive educational widgets: AEM lifecycle animation, CF output demo, migration checklist, Dispatcher filter tester, live coding editor.</td></tr>
       <tr><td>Progress Tracking</td><td>Progress bar (top), score pills per topic (sidebar), streak counter (3+ correct), overall score. All saved in browser localStorage.</td></tr>
       <tr><td>Dark / Light Theme</td><td>Toggle button (top-right). Respects <code>prefers-color-scheme</code> and persists choice in localStorage.</td></tr>
-      <tr><td>Mobile Responsive</td><td>Hamburger menu, sliding navigation drawer, floating user avatar with dropdown, full-width footer on mobile.</td></tr>
+      <tr><td>Mobile Responsive</td><td>Hamburger menu, sliding navigation drawer, floating user avatar with dropdown, full-width footer. All widgets optimized for small screens (&lt;480px) — smaller icons, stacked panels, wrapped stages.</td></tr>
       <tr><td>Canvas Avatars</td><td>Auto-generated colored initial avatars for users without Google profile photos (deterministic from email).</td></tr>
       <tr><td>Feedback System</td><td>Sidebar button opens a modal with category dropdown (Suggestion/Bug/Content/Appreciation/Other) and text area. Saved to Firestore <code>feedback</code> collection. Admin panel has "Feedback" viewer with "Mark Read" button. No email exposed to users.</td></tr>
       <tr><td>Bookmark Topics</td><td>Star icon on each topic in sidebar — click to save/unsave. "Saved" tab in sidebar filters to bookmarked topics only. Bookmark button also appears in topic header. Persists in browser localStorage (<code>aem_bookmarks_v1</code>). Bookmarks are independent of quiz progress reset.</td></tr>
@@ -398,7 +398,38 @@ hr {
     <h3>UI Improvements</h3>
     <ul>
       <li>Scenario-based Q&A answers are collapsible (click to expand) with Expand All / Collapse All</li>
-      <li>New sidebar tabs: Frontend, Scenarios</li>
+      <li>New sidebar tabs: Frontend, Scenarios, Saved (bookmarks)</li>
+      <li>Mobile widget fixes — all interactive widgets optimized for phones (&lt;480px)</li>
+      <li>Footer disclaimer: "Not affiliated with Adobe Inc. &middot; Terms & Privacy"</li>
+    </ul>
+
+    <h3>Account Features</h3>
+    <ul>
+      <li>Forgot Password — on login screen, sends Firebase reset email</li>
+      <li>Change Password — in sidebar/mobile dropdown, sends reset email (Google users redirected)</li>
+      <li>Delete Account — triple confirmation, deletes Firestore data + Firebase Auth account</li>
+      <li>Terms & Privacy Policy — modal with 9 sections, required checkbox on email signup</li>
+    </ul>
+
+    <h3>Monetization</h3>
+    <ul>
+      <li>Free/Pro tier — 15 free topics, 47 locked with amber dot, upgrade modal</li>
+      <li>Pricing: &#8377;99/month (30 days access), cancel anytime</li>
+      <li>Free topics sorted first in sidebar for free users</li>
+      <li>Practice All MCQs and AEM Cheat Sheet locked for free users</li>
+      <li>50 flashcards (19 new), 30 per session</li>
+      <li>Topic reorder — practice topics (Flashcard, Troubleshooting, etc.) after Scenarios</li>
+    </ul>
+
+    <h3>PWA (Progressive Web App)</h3>
+    <ul>
+      <li>Installable as app from Chrome browser — "Add to Home Screen"</li>
+      <li>Full-screen experience (no browser bar)</li>
+      <li>Offline access via service worker caching</li>
+      <li>App icon on home screen (SG logo)</li>
+      <li>Install prompt banner appears after 30 seconds</li>
+      <li>Works on Android + iOS</li>
+      <li>Auto-updates on next visit after deploy</li>
     </ul>
   </section>
 
@@ -755,7 +786,7 @@ service cloud.firestore {
       <tr><th>Date</th><th>Topics</th><th>MCQs</th><th>Milestone</th></tr>
       <tr><td>Aug 2026</td><td>52</td><td>416</td><td>Initial launch with Firebase auth</td></tr>
       <tr><td>Sep 2026</td><td>56</td><td>492</td><td>Added Forms, CI/CD, Cloud Migration</td></tr>
-      <tr><td>Oct 2026</td><td>62</td><td>544</td><td>Added EDS, CWV, AI, Granite UI, ClientLibs, 74 Scenarios, Bookmarks, Feedback system, Firebase Hosting migration</td></tr>
+      <tr><td>Oct 2026</td><td>62</td><td>544</td><td>Added EDS, CWV, AI, Granite UI, ClientLibs, 74 Scenarios, Bookmarks, Feedback, Free/Pro tier (&#8377;99/month), 50 flashcards, Forgot/Change/Delete Password, Terms & Privacy, PWA, mobile widget fixes, legal disclaimer</td></tr>
     </table>
   </section>
 
