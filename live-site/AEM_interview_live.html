@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1b2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="description" content="Interactive AEM interview preparation guide with 544 MCQs covering 62 topics including Edge Delivery Services, Core Web Vitals, AI for AEM.">
 <meta name="author" content="Sumit Gaidhani">
 <title>AEM Interview Preparation - 62 Topics Interactive Guide</title>
@@ -10585,6 +10590,37 @@ function initAdminPanel(){
   };
 
   setTimeout(runHealthCheck,500);
+}
+
+// ========== PWA: Service Worker + Install Prompt ==========
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(function(reg) { console.log('SW registered'); })
+    .catch(function(err) { console.log('SW failed:', err); });
+}
+
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(function() {
+    if (!deferredPrompt) return;
+    var banner = document.createElement('div');
+    banner.id = 'pwaBanner';
+    banner.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;padding:12px 20px;border-radius:12px;font-family:var(--mono);font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.3);display:flex;align-items:center;gap:12px;max-width:calc(100vw - 32px);';
+    banner.innerHTML = '📱 Install AEM Prep App <button onclick="installPWA()" style="padding:6px 16px;border-radius:6px;border:none;background:#fff;color:#0891b2;font-weight:700;cursor:pointer;font-size:12px;">Install</button><button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:16px;">×</button>';
+    document.body.appendChild(banner);
+  }, 30000);
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function() {
+    deferredPrompt = null;
+    var banner = document.getElementById('pwaBanner');
+    if (banner) banner.remove();
+  });
 }
 
 </script>
