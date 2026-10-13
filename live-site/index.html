@@ -10047,6 +10047,7 @@ showTopic('t1');updateScorePills();updateProgressBar();
 <div class="mobile-user-dropdown" id="mobileUserDropdown">
 <div class="mu-name" id="mobileUserName">User</div>
 <div class="mu-email" id="mobileUserEmail">email</div>
+<button class="mu-logout" id="mobileInstallApp" onclick="installPWA()" style="margin-bottom:6px;display:none;border-color:rgba(8,145,178,0.4);color:#22d3ee;">&#128241; Install App</button>
 <button class="mu-logout" onclick="changePassword()" style="margin-bottom:6px;">&#128273; Change Password</button>
 <button class="mu-logout" onclick="signOutUser()" style="margin-bottom:6px;">&#x2192; Sign Out</button>
 <button class="mu-logout" onclick="deleteAccount()" style="font-size:11px;color:#94a3b8;border-color:rgba(220,38,38,0.2);">&#128465; Delete Account</button>
@@ -10777,6 +10778,8 @@ window.addEventListener('beforeinstallprompt', function(e) {
   deferredPrompt = e;
   var installBtn = document.getElementById('sudInstallApp');
   if (installBtn) installBtn.style.display = '';
+  var mobileInstallBtn = document.getElementById('mobileInstallApp');
+  if (mobileInstallBtn) mobileInstallBtn.style.display = '';
   // Show banner only on mobile (width <= 860px)
   if (window.innerWidth > 860) return;
   setTimeout(function() {
