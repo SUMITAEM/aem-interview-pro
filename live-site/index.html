@@ -315,7 +315,7 @@ pre{font-size:11px;padding:10px 12px;}
 .login-toggle a:hover{text-decoration:underline;}
 .login-error{color:#f87171;font-size:12px;margin-top:8px;min-height:18px;}
 /* User profile in sidebar */
-.sidebar-user{position:fixed;bottom:0;left:0;width:280px;padding:10px 16px;background:#0a1420;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;z-index:101;}
+.sidebar-user{position:fixed;bottom:0;left:0;width:280px;padding:10px 16px;background:#0a1420;border-top:1px solid rgba(255,255,255,0.1);display:flex;flex-wrap:wrap;align-items:center;gap:8px;z-index:101;}
 .sidebar-user img{width:32px;height:32px;border-radius:50%;border:2px solid var(--accent);}
 .sidebar-user .user-info{flex:1;min-width:0;}
 .sidebar-user .user-name{font-size:12px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -430,7 +430,7 @@ Sign in with Google
 <div class="user-name" id="userName">User</div>
 <div class="user-email" id="userEmail">email</div>
 </div>
-<div style="display:flex;gap:4px;margin-top:4px;"><button class="logout-btn" onclick="changePassword()" style="flex:1;" title="Change Password">&#128273; Password</button><button class="logout-btn" onclick="signOutUser()" style="flex:1;" title="Logout">&#x2192; Logout</button><button class="logout-btn" onclick="deleteAccount()" style="flex-shrink:0;padding:5px 6px;border-color:rgba(220,38,38,0.3);color:#64748b;" title="Delete Account">&#128465;</button></div>
+<div style="display:flex;gap:4px;width:100%;"><button class="logout-btn" onclick="changePassword()" style="flex:1;" title="Change Password">&#128273;</button><button class="logout-btn" onclick="signOutUser()" style="flex:1;" title="Logout">Logout</button><button class="logout-btn" onclick="deleteAccount()" style="flex-shrink:0;padding:5px 6px;border-color:rgba(220,38,38,0.3);color:#64748b;" title="Delete Account">&#128465;</button></div>
 </div>
 </nav>
 <main class="main" id="mainContent"></main>
