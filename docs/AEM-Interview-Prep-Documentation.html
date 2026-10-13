@@ -320,7 +320,12 @@ hr {
       <tr><td>Canvas Avatars</td><td>Auto-generated colored initial avatars for users without Google profile photos (deterministic from email).</td></tr>
       <tr><td>Feedback System</td><td>Sidebar button opens a modal with category dropdown (Suggestion/Bug/Content/Appreciation/Other) and text area. Saved to Firestore <code>feedback</code> collection. Admin panel has "Feedback" viewer with "Mark Read" button. No email exposed to users.</td></tr>
       <tr><td>Bookmark Topics</td><td>Star icon on each topic in sidebar — click to save/unsave. "Saved" tab in sidebar filters to bookmarked topics only. Bookmark button also appears in topic header. Persists in browser localStorage (<code>aem_bookmarks_v1</code>). Bookmarks are independent of quiz progress reset.</td></tr>
-      <tr><td>Free / Pro Tier</td><td>15 free topics shown first, 47 pro topics with amber dot indicator. Free users see sorted list (free first, pro after). Pro users see original order, no dots. Clicking locked topic shows upgrade modal. Practice All MCQs and AEM Cheat Sheet locked for free users. Admin emails always bypass all locks. Firestore <code>plan: "pro"</code> field controls access.</td></tr>
+      <tr><td>Free / Pro Tier</td><td>15 free topics shown first, 47 pro topics with amber dot indicator. Free users see sorted list (free first, pro after). Pro users see original order, no dots. Clicking locked topic shows upgrade modal (&#8377;99/month). Practice All MCQs and AEM Cheat Sheet locked for free users. Admin emails always bypass all locks. Firestore <code>plan: "pro"</code> field controls access.</td></tr>
+      <tr><td>Forgot Password</td><td>Link on login screen — enter email, click "Forgot Password?", Firebase sends a password reset email. Success message shown in green.</td></tr>
+      <tr><td>Change Password</td><td>Button in sidebar (desktop) and user dropdown (mobile) — sends password reset email via Firebase Auth. Google sign-in users are informed that password is managed by Google.</td></tr>
+      <tr><td>Delete Account</td><td>Button in sidebar and mobile dropdown. Triple confirmation (confirm + confirm + type email). Deletes Firestore user document and Firebase Auth account. Requires recent login for security.</td></tr>
+      <tr><td>Terms & Privacy Policy</td><td>Modal accessible from footer link and signup checkbox. Covers: data collected, how it's used, storage (Firebase), user rights (view/delete/change password), single-device policy, cookies. Required checkbox on email signup.</td></tr>
+      <tr><td>PWA (Progressive Web App)</td><td>Installable as app from Chrome browser. Full-screen (no browser bar), offline access, app icon on home screen, splash screen. Install banner appears after 30 seconds. Works on Android + iOS.</td></tr>
     </table>
 
     <h3>Content Categories (Sidebar Tabs)</h3>
@@ -870,6 +875,132 @@ service cloud.firestore {
       <tr><td>Firestore Rules</td><td><a href="https://console.firebase.google.com/project/aem-interview-prep/firestore/rules">Firebase &rarr; Firestore &rarr; Rules</a></td></tr>
       <tr><td>Google Analytics</td><td><a href="https://analytics.google.com">analytics.google.com (G-SYJ6NGF8TP)</a></td></tr>
       <tr><td>GitHub Actions</td><td><a href="https://github.com/SUMITAEM/aem-interview-pro/actions">GitHub &rarr; Actions (deploy status)</a></td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- SHARING -->
+  <section>
+    <h2>How to Share the App</h2>
+
+    <h3>Share URL</h3>
+    <div class="card highlight">
+      <h4>Live URL</h4>
+      <p style="font-size:16px;font-weight:700;"><a href="https://sumitaem.github.io/aem-interview-pro/">https://sumitaem.github.io/aem-interview-pro/</a></p>
+      <p>Share this link on LinkedIn, WhatsApp, Telegram, email, or any platform.</p>
+    </div>
+
+    <h3>Share Templates</h3>
+
+    <h4 style="color:var(--accent);margin:14px 0 6px;">WhatsApp / Telegram</h4>
+    <div class="card">
+      <pre style="white-space:pre-wrap;font-size:12px;background:var(--section-alt);color:var(--ink);">Preparing for AEM interviews? Check out this free interactive guide:
+
+62 Topics | 544 MCQs | 74 Scenario Questions | 50 Flashcards
+
+Covers: Architecture, Sling Models, OSGi, HTL, Dispatcher, Content Fragments, Workflows, Cloud Manager, Edge Delivery Services and more.
+
+https://sumitaem.github.io/aem-interview-pro/</pre>
+    </div>
+
+    <h4 style="color:var(--accent);margin:14px 0 6px;">LinkedIn Post</h4>
+    <div class="card">
+      <pre style="white-space:pre-wrap;font-size:12px;background:var(--section-alt);color:var(--ink);">I built an interactive AEM Interview Preparation platform to help developers prepare for Adobe Experience Manager interviews.
+
+What's inside:
+- 62 structured topics covering the full AEM stack
+- 544 interactive MCQs with instant feedback
+- 74 scenario-based questions for senior roles
+- 50 rapid-fire flashcards
+- AI-powered study assistant
+- Dark/light theme, progress tracking, bookmarks
+
+Free to use (login required):
+https://sumitaem.github.io/aem-interview-pro/
+
+#AEM #AdobeExperienceManager #AEMDeveloper #InterviewPrep #TechInterview #WebDevelopment</pre>
+    </div>
+
+    <h4 style="color:var(--accent);margin:14px 0 6px;">Email</h4>
+    <div class="card">
+      <pre style="white-space:pre-wrap;font-size:12px;background:var(--section-alt);color:var(--ink);">Subject: AEM Interview Preparation — Free Interactive Guide
+
+Hi,
+
+I wanted to share this interactive AEM interview preparation platform that covers 62 topics with 544 MCQs and 74 scenario-based questions.
+
+It's perfect for anyone preparing for AEM developer interviews or Adobe certifications.
+
+Link: https://sumitaem.github.io/aem-interview-pro/
+
+Features:
+- Interactive quizzes with instant feedback
+- Scenario-based questions for senior roles
+- Flashcard rapid-fire mode
+- AI study assistant
+- Works on mobile (installable as app)
+
+Best,
+Sumit Gaidhani</pre>
+    </div>
+
+    <h3>PWA Install Instructions (Share with Users)</h3>
+    <div class="card">
+      <h4>How to Install as App</h4>
+      <ol>
+        <li>Open <a href="https://sumitaem.github.io/aem-interview-pro/">sumitaem.github.io/aem-interview-pro</a> in <strong>Chrome</strong> on your phone</li>
+        <li>Wait for the <strong>"Install AEM Prep App"</strong> banner at the bottom</li>
+        <li>Tap <strong>Install</strong> — or tap Chrome menu (&vellip;) &rarr; <strong>"Add to Home Screen"</strong></li>
+        <li>App icon appears on your home screen</li>
+        <li>Opens full-screen like a native app</li>
+        <li>Works offline after first visit</li>
+      </ol>
+    </div>
+
+    <h3>QR Code</h3>
+    <p>Generate a QR code for easy sharing at events or on printed materials:</p>
+    <ul>
+      <li>Go to <a href="https://www.qr-code-generator.com/">qr-code-generator.com</a></li>
+      <li>Enter URL: <code>https://sumitaem.github.io/aem-interview-pro/</code></li>
+      <li>Download and share the QR code image</li>
+    </ul>
+  </section>
+
+  <hr>
+
+  <!-- ALL CHECKS -->
+  <section>
+    <h2>Functionality Status</h2>
+    <table>
+      <tr><th>Feature</th><th>Status</th><th>Verified</th></tr>
+      <tr><td>Site loads</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Logo &amp; images</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Google Sign-In</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Email Sign-Up / Sign-In</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Forgot Password</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Change Password</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Delete Account</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Terms &amp; Privacy</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Free/Pro tier (15 free, 47 locked)</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Upgrade modal (&#8377;99/month)</td><td>Working (payment pending)</td><td>Oct 13, 2026</td></tr>
+      <tr><td>PRO badge (admin emails)</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Admin panel (email-based)</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>User blocking</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Feedback system</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Single-device enforcement</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Bookmarks (Saved tab)</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Flashcards (50 cards, 30/session)</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Collapsible Scenario Q&amp;A</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Chat assistant</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Dark/Light theme</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Progress tracking</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Mobile responsive</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>PWA (manifest.json)</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Service worker (sw.js)</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>PWA install prompt</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Firebase Analytics</td><td>Working</td><td>Oct 13, 2026</td></tr>
+      <tr><td>Legal disclaimer</td><td>Working</td><td>Oct 13, 2026</td></tr>
     </table>
   </section>
 </div>
