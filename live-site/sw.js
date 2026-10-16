@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aem-prep-v1';
+const CACHE_NAME = 'aem-prep-v2';
 const ASSETS = [
   '/aem-interview-pro/',
   '/aem-interview-pro/index.html',
