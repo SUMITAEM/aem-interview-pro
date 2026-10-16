@@ -626,7 +626,7 @@ service cloud.firestore {
                     && request.auth.token.email in
                        ['sumit.gaidhani@gmail.com','sumit.aem23@gmail.com']
                     && request.resource.data.diff(resource.data)
-                       .affectedKeys().hasOnly(['disabled']);
+                       .affectedKeys().hasOnly(['disabled','plan']);
     }
     match /feedback/{feedbackId} {
       allow create: if request.auth != null;
@@ -640,7 +640,7 @@ service cloud.firestore {
 
     <div class="card warn">
       <h4>Important: Update Firestore Rules</h4>
-      <p>The new rules above add admin read access (for User Audit) and the ability to set the <code>disabled</code> field (for blocking users). The admin update rule is restricted — admins can <strong>only</strong> change the <code>disabled</code> field on other users' documents, nothing else. Apply these rules in Firebase Console immediately.</p>
+      <p>The new rules above add admin read access (for User Audit) and the ability to set the <code>disabled</code> and <code>plan</code> fields (for blocking users and managing Pro access). The admin update rule is restricted — admins can <strong>only</strong> change the <code>disabled</code> and <code>plan</code> fields on other users' documents, nothing else. Apply these rules in Firebase Console immediately.</p>
     </div>
 
     <div class="card warn">

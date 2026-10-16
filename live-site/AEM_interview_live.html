@@ -10442,9 +10442,41 @@ function trackLogin(method) {
   if (analytics) analytics.logEvent('login', { method: method });
 }
 
+// ========== ADMIN HELPERS ==========
+function getBrowserName(){
+  var ua=navigator.userAgent;
+  if(ua.indexOf('Edg')>-1)return 'Edge';
+  if(ua.indexOf('OPR')>-1||ua.indexOf('Opera')>-1)return 'Opera';
+  if(ua.indexOf('Chrome')>-1)return 'Chrome';
+  if(ua.indexOf('Safari')>-1)return 'Safari';
+  if(ua.indexOf('Firefox')>-1)return 'Firefox';
+  return 'Other';
+}
+function getDeviceType(){
+  if(/Mobi|Android|iPhone/i.test(navigator.userAgent))return 'Mobile';
+  if(/Tablet|iPad/i.test(navigator.userAgent))return 'Tablet';
+  return 'Desktop';
+}
+function timeAgo(d){
+  if(!d)return 'Never';
+  var s=Math.floor((Date.now()-d.getTime())/1000);
+  if(s<60)return 'Just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  if(s<604800)return Math.floor(s/86400)+'d ago';
+  return d.toLocaleDateString();
+}
+
 // ========== SAVE USER DATA TO FIRESTORE ==========
 function saveUserData(user) {
   var userRef = db.collection('users').doc(user.uid);
+  var loginMethod = 'email';
+  if (user.providerData && user.providerData.length > 0) {
+    var pid = user.providerData[0].providerId;
+    if (pid === 'google.com') loginMethod = 'google';
+    else if (pid === 'password') loginMethod = 'email';
+    else loginMethod = pid;
+  }
   userRef.set({
     email: user.email,
     displayName: user.displayName || user.email.split('@')[0],
@@ -10456,9 +10488,21 @@ function saveUserData(user) {
     return userRef.get();
   })
   .then(function(doc) {
+    var updates = {};
     if (doc.exists && !doc.data().createdAt) {
-      return userRef.update({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      updates.createdAt = firebase.firestore.FieldValue.serverTimestamp();
     }
+    var history = (doc.exists && doc.data().loginHistory) ? doc.data().loginHistory.slice() : [];
+    history.push({
+      time: new Date().toISOString(),
+      device: getDeviceType(),
+      browser: getBrowserName(),
+      method: loginMethod,
+      ua: navigator.userAgent.substr(0, 120)
+    });
+    if (history.length > 30) history = history.slice(-30);
+    updates.loginHistory = history;
+    return userRef.update(updates);
   })
   .catch(function(error) {
     console.error('Firestore saveUserData failed:', error.code, error.message);
@@ -10638,131 +10682,328 @@ function submitFeedback(){
   });
 }
 
-// ========== FIREBASE ADMIN HEALTH CHECK PANEL ==========
+// ========== FIREBASE ADMIN PANEL ==========
 var _adminPanelInit = false;
 function initAdminPanel(){
   if(_adminPanelInit)return;
   _adminPanelInit=true;
 
+  var st=document.createElement('style');
+  st.textContent='#adminPanel{position:fixed;bottom:20px;right:20px;width:560px;max-width:calc(100vw - 24px);max-height:85vh;background:#0d1b2a;color:#e2e8f0;border-radius:14px;border:2px solid #0891b2;box-shadow:0 12px 40px rgba(0,0,0,0.6);z-index:999999;font-family:var(--mono);font-size:12px;display:flex;flex-direction:column;overflow:hidden;}#adminPanel.ap-min{height:44px!important;overflow:hidden;}#adminPanel.ap-min .ap-tabs,#adminPanel.ap-min .ap-body{display:none!important;}.ap-hdr{padding:10px 14px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;cursor:move;}.ap-hdr-t{font-size:14px;font-weight:700;color:#22d3ee;}.ap-hdr-btns{display:flex;gap:2px;}.ap-hdr-btns button{background:none;border:none;color:#64748b;cursor:pointer;font-size:15px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;}.ap-hdr-btns button:hover{background:rgba(255,255,255,0.06);color:#e2e8f0;}.ap-tabs{display:flex;border-bottom:1px solid #1e293b;flex-shrink:0;padding:0 6px;}.ap-tab{flex:1;padding:9px 4px;text-align:center;font-size:10px;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;}.ap-tab:hover{color:#94a3b8;}.ap-tab.active{color:#22d3ee;border-bottom-color:#22d3ee;}.ap-badge{font-size:8px;padding:1px 5px;border-radius:8px;background:#dc2626;color:#fff;min-width:14px;text-align:center;}.ap-body{flex:1;overflow-y:auto;padding:14px 16px;}.ap-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}.ap-stat{background:#111827;border-radius:10px;padding:12px 10px;text-align:center;border:1px solid #1e293b;cursor:default;}.ap-stat:hover{border-color:#334155;}.ap-sv{font-size:22px;font-weight:800;margin-bottom:1px;}.ap-sl{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.4px;}.ap-search{width:100%;padding:8px 12px;border-radius:8px;border:1px solid #1e293b;background:#111827;color:#e2e8f0;font-family:var(--mono);font-size:12px;margin-bottom:8px;outline:none;box-sizing:border-box;}.ap-search:focus{border-color:#0891b2;}.ap-tbar{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap;}.ap-tbar select,.ap-tbar button{padding:5px 10px;border-radius:6px;border:1px solid #1e293b;background:#111827;color:#94a3b8;font-family:var(--mono);font-size:10px;cursor:pointer;}.ap-tbar button:hover{border-color:#334155;color:#e2e8f0;}.ap-tbar .ap-count{font-size:11px;color:#64748b;margin-left:auto;}.ap-urow{display:flex;align-items:center;gap:8px;padding:9px 8px;border-bottom:1px solid #1e293b;cursor:pointer;transition:background .12s;border-radius:6px;}.ap-urow:hover{background:rgba(8,145,178,0.06);}.ap-uav{width:30px;height:30px;border-radius:50%;flex-shrink:0;object-fit:cover;background:#1e293b;}.ap-uinfo{flex:1;min-width:0;}.ap-uname{font-weight:600;color:#e2e8f0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;}.ap-uemail{font-size:9px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.ap-umeta{display:flex;gap:8px;align-items:center;flex-shrink:0;}.ap-umeta span{font-size:9px;color:#94a3b8;white-space:nowrap;}.ap-bg{font-size:7px;padding:2px 5px;border-radius:3px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}.ap-bg-pro{background:rgba(217,119,6,.2);color:#fbbf24;}.ap-bg-free{background:rgba(100,116,139,.15);color:#64748b;}.ap-bg-admin{background:rgba(217,119,6,.3);color:#fbbf24;}.ap-bg-blocked{background:rgba(220,38,38,.2);color:#f87171;}.ap-detail{background:#111827;border-radius:10px;border:1px solid #1e293b;padding:16px;margin-bottom:12px;}.ap-dhdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #1e293b;}.ap-dav{width:44px;height:44px;border-radius:50%;flex-shrink:0;object-fit:cover;}.ap-dname{font-size:15px;font-weight:700;color:#e2e8f0;}.ap-demail{font-size:11px;color:#64748b;}.ap-dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}.ap-ditem{background:#0d1b2a;border-radius:8px;padding:10px;}.ap-dl{font-size:8px;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}.ap-dv{font-size:12px;color:#e2e8f0;font-weight:600;}.ap-dacts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}.ap-dacts button{padding:7px 12px;border-radius:6px;font-family:var(--mono);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;}.ap-lhist h4{font-size:11px;color:#22d3ee;margin:0 0 8px;font-weight:700;}.ap-lentry{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1e293b;font-size:10px;}.ap-ldot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}.ap-ltime{color:#94a3b8;min-width:80px;flex-shrink:0;}.ap-lmethod{color:#22d3ee;}.ap-ldevice{color:#64748b;}@media(max-width:640px){#adminPanel{width:calc(100vw - 16px);right:8px;bottom:8px;max-height:90vh;}.ap-stats{grid-template-columns:repeat(2,1fr);}}';
+  document.head.appendChild(st);
+
   var panel=document.createElement('div');
   panel.id='adminPanel';
-  panel.style.cssText='position:fixed;bottom:20px;right:20px;width:420px;max-width:calc(100vw - 32px);max-height:80vh;overflow-y:auto;background:#0d1b2a;color:#e2e8f0;border-radius:12px;border:2px solid #0891b2;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:999999;font-family:var(--mono);font-size:12px;padding:0;';
-  panel.innerHTML='<div style="padding:14px 16px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14px;font-weight:700;color:#22d3ee;">&#128295; Admin Panel</div><button onclick="document.getElementById(\'adminPanel\').remove()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:18px;">&times;</button></div><div id="adminResults" style="padding:14px 16px;"></div><div style="padding:10px 16px;border-top:1px solid #1e293b;display:flex;gap:8px;"><button onclick="runHealthCheck()" style="flex:1;padding:8px;border-radius:6px;border:1px solid #0891b2;background:rgba(8,145,178,0.15);color:#22d3ee;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:600;">&#x21BB; Re-run Check</button><button onclick="runUserAudit()" style="flex:1;padding:8px;border-radius:6px;border:1px solid #d97706;background:rgba(217,119,6,0.15);color:#fbbf24;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:600;">&#128101; Users</button><button onclick="viewFeedback()" style="flex:1;padding:8px;border-radius:6px;border:1px solid #a855f7;background:rgba(168,85,247,0.15);color:#c084fc;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:600;">&#128172; Feedback</button></div>';
+  panel.innerHTML='<div class="ap-hdr"><span class="ap-hdr-t">&#9881; Admin Panel</span><div class="ap-hdr-btns"><button onclick="document.getElementById(\'adminPanel\').classList.toggle(\'ap-min\')" title="Minimize">&#9866;</button><button onclick="document.getElementById(\'adminPanel\').remove();_adminPanelInit=false;" title="Close">&times;</button></div></div>'
+  +'<div class="ap-tabs"><div class="ap-tab active" data-tab="dashboard" onclick="adminTab(\'dashboard\')">&#128202; Dashboard</div><div class="ap-tab" data-tab="users" onclick="adminTab(\'users\')">&#128101; Users</div><div class="ap-tab" data-tab="feedback" onclick="adminTab(\'feedback\')">&#128172; Feedback <span class="ap-badge" id="apFbBadge" style="display:none;">0</span></div><div class="ap-tab" data-tab="health" onclick="adminTab(\'health\')">&#9889; Health</div></div>'
+  +'<div class="ap-body" id="adminResults"></div>';
   document.body.appendChild(panel);
 
-  function out(html){document.getElementById('adminResults').innerHTML=html;}
-  function row(icon,label,detail,ok){return '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #1e293b;"><span style="flex-shrink:0;">'+icon+'</span><div><div style="font-weight:600;color:'+(ok?'#34d399':'#f87171')+';">'+label+'</div><div style="color:#94a3b8;font-size:11px;margin-top:2px;word-break:break-all;">'+detail+'</div></div></div>';}
+  var _usersCache=null;
 
-  window.runHealthCheck=function(){
-    var html='<div style="color:#94a3b8;margin-bottom:8px;">Running checks...</div>';
-    out(html);
-    var rows='';
+  function out(h){document.getElementById('adminResults').innerHTML=h;}
+  function esc(s){return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-    // 1. Firebase App
-    try{firebase.app();rows+=row('&#9989;','Firebase App','Project: '+firebaseConfig.projectId,true);}
-    catch(e){rows+=row('&#10060;','Firebase App',e.message,false);}
-
-    // 2. Auth
-    var user=auth.currentUser;
-    if(user){rows+=row('&#9989;','Authentication','Signed in: '+user.email+'<br>UID: '+user.uid,true);}
-    else{rows+=row('&#9888;&#65039;','Authentication','Not signed in — sign in first',false);}
-
-    // 3. Analytics
-    if(analytics&&firebaseConfig.measurementId&&firebaseConfig.measurementId!=='G-PLACEHOLDER'){
-      rows+=row('&#9989;','Analytics','Measurement ID: '+firebaseConfig.measurementId,true);
-    }else{rows+=row('&#10060;','Analytics','measurementId missing or invalid',false);}
-
-    // 4. Firestore
-    if(user){
-      var ref=db.collection('users').doc(user.uid);
-      ref.get().then(function(doc){
-        if(doc.exists){
-          var d=doc.data();
-          rows+=row('&#9989;','Firestore Read','loginCount: '+(d.loginCount||0)+', lastLogin: '+(d.lastLogin?d.lastLogin.toDate().toLocaleString():'not set'),true);
-        }else{
-          rows+=row('&#10060;','Firestore Read','User doc MISSING — rules may be blocking writes',false);
-        }
-        return ref.set({_healthCheck:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-      }).then(function(){
-        rows+=row('&#9989;','Firestore Write','Write test passed — rules are working',true);
-        return ref.update({_healthCheck:firebase.firestore.FieldValue.delete()});
-      }).catch(function(err){
-        rows+=row('&#10060;','Firestore Write',err.code+': '+err.message+(err.code==='permission-denied'?'<br><br><strong style="color:#fbbf24;">FIX:</strong> Update Firestore Rules in Firebase Console — set: allow read, write: if request.auth != null && request.auth.uid == userId;':''),false);
-      }).then(function(){out(rows);});
-    }else{
-      out(rows);
-    }
+  window.adminTab=function(t){
+    document.querySelectorAll('.ap-tab').forEach(function(el){el.classList.toggle('active',el.dataset.tab===t);});
+    out('<div style="color:#94a3b8;text-align:center;padding:30px;">Loading...</div>');
+    if(t==='dashboard')adminDashboard();
+    else if(t==='users')adminUsers();
+    else if(t==='feedback')adminFeedback();
+    else if(t==='health')adminHealth();
   };
 
-  window.runUserAudit=function(){
-    out('<div style="color:#94a3b8;">Comparing Auth users vs Firestore docs...</div>');
-    var user=auth.currentUser;
-    if(!user){out('<div style="color:#f87171;">Sign in first to run audit.</div>');return;}
-
-    db.collection('users').get().then(function(snapshot){
-      var firestoreCount=snapshot.size;
-      var users=[];
-      snapshot.forEach(function(doc){
+  // ===== DASHBOARD =====
+  window.adminDashboard=function(){
+    if(!auth.currentUser){out('<div style="color:#f87171;">Sign in first.</div>');return;}
+    db.collection('users').get().then(function(snap){
+      var users=[];var now=new Date();var weekAgo=new Date(now-7*86400000);
+      var totalLogins=0,proCount=0,blockedCount=0,activeCount=0,newCount=0;
+      snap.forEach(function(doc){
         var d=doc.data();
-        users.push({uid:doc.id,email:d.email||'unknown',name:d.displayName||'-',logins:d.loginCount||0,last:d.lastLogin?d.lastLogin.toDate().toLocaleDateString():'never',created:d.createdAt?d.createdAt.toDate().toLocaleDateString():'not set',disabled:d.disabled===true,device:d.activeDevice?d.activeDevice.substr(0,40)+'...':'-'});
+        var u={uid:doc.id,email:d.email||'',name:d.displayName||'-',logins:d.loginCount||0,
+          lastLogin:d.lastLogin?d.lastLogin.toDate():null,created:d.createdAt?d.createdAt.toDate():null,
+          plan:d.plan||'free',disabled:d.disabled===true,photo:d.photoURL||null};
+        users.push(u);
+        totalLogins+=u.logins;
+        if(u.plan==='pro'||ADMIN_EMAILS.indexOf(u.email)!==-1)proCount++;
+        if(u.disabled)blockedCount++;
+        if(u.lastLogin&&u.lastLogin>weekAgo)activeCount++;
+        if(u.created&&u.created>weekAgo)newCount++;
+      });
+      _usersCache=users;
+
+      var h='<div class="ap-stats">';
+      h+='<div class="ap-stat"><div class="ap-sv" style="color:#22d3ee;">'+users.length+'</div><div class="ap-sl">Total Users</div></div>';
+      h+='<div class="ap-stat"><div class="ap-sv" style="color:#34d399;">'+activeCount+'</div><div class="ap-sl">Active (7d)</div></div>';
+      h+='<div class="ap-stat"><div class="ap-sv" style="color:#fbbf24;">'+proCount+'</div><div class="ap-sl">Pro Users</div></div>';
+      h+='<div class="ap-stat"><div class="ap-sv" style="color:#f87171;">'+blockedCount+'</div><div class="ap-sl">Blocked</div></div>';
+      h+='<div class="ap-stat"><div class="ap-sv" style="color:#a78bfa;">'+newCount+'</div><div class="ap-sl">New (7d)</div></div>';
+      h+='<div class="ap-stat"><div class="ap-sv" style="color:#38bdf8;">'+totalLogins+'</div><div class="ap-sl">Total Logins</div></div>';
+      h+='</div>';
+
+      var recent=users.filter(function(u){return u.created;}).sort(function(a,b){return b.created-a.created;}).slice(0,5);
+      if(recent.length){
+        h+='<div style="font-size:11px;font-weight:700;color:#22d3ee;margin-bottom:8px;">Recent Signups</div>';
+        recent.forEach(function(u){
+          var isAdmin=ADMIN_EMAILS.indexOf(u.email)!==-1;
+          h+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1e293b;">';
+          h+='<div style="width:6px;height:6px;border-radius:50%;background:#34d399;flex-shrink:0;"></div>';
+          h+='<div style="flex:1;min-width:0;"><div style="font-size:11px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(u.name)+(isAdmin?' <span class="ap-bg ap-bg-admin">ADMIN</span>':'')+'</div>';
+          h+='<div style="font-size:9px;color:#64748b;">'+esc(u.email)+'</div></div>';
+          h+='<div style="font-size:9px;color:#94a3b8;flex-shrink:0;">'+timeAgo(u.created)+'</div>';
+          h+='</div>';
+        });
+      }
+
+      var topUsers=users.slice().sort(function(a,b){return b.logins-a.logins;}).slice(0,5);
+      if(topUsers.length){
+        h+='<div style="font-size:11px;font-weight:700;color:#fbbf24;margin:14px 0 8px;">Most Active Users</div>';
+        topUsers.forEach(function(u,i){
+          h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1e293b;">';
+          h+='<span style="font-size:10px;color:#64748b;width:16px;text-align:right;">#'+(i+1)+'</span>';
+          h+='<div style="flex:1;font-size:11px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(u.email)+'</div>';
+          h+='<span style="font-size:11px;color:#34d399;font-weight:700;">'+u.logins+'</span>';
+          h+='</div>';
+        });
+      }
+
+      out(h);
+    }).catch(function(err){out('<div style="color:#f87171;">Failed: '+err.message+'</div>');});
+  };
+
+  // ===== USERS =====
+  window.adminUsers=function(searchTerm,sortBy){
+    if(!auth.currentUser){out('<div style="color:#f87171;">Sign in first.</div>');return;}
+    var render=function(users){
+      sortBy=sortBy||'logins';
+      var filtered=users;
+      if(searchTerm){
+        var q=searchTerm.toLowerCase();
+        filtered=users.filter(function(u){return u.email.toLowerCase().indexOf(q)>-1||(u.name||'').toLowerCase().indexOf(q)>-1;});
+      }
+      filtered.sort(function(a,b){
+        if(sortBy==='logins')return b.logins-a.logins;
+        if(sortBy==='name')return(a.name||'').localeCompare(b.name||'');
+        if(sortBy==='last')return(b.lastLogin||0)-(a.lastLogin||0);
+        if(sortBy==='created')return(b.created||0)-(a.created||0);
+        if(sortBy==='email')return a.email.localeCompare(b.email);
+        return 0;
       });
 
-      var html='<div style="margin-bottom:10px;font-weight:700;color:#22d3ee;">Firestore Users: '+firestoreCount+'</div>';
-      html+='<div style="margin-bottom:8px;font-size:11px;color:#94a3b8;">Compare with Firebase Auth user count. Click Block/Unblock to manage access.</div>';
-      html+='<table style="width:100%;font-size:10px;border-collapse:collapse;">';
-      html+='<tr><th style="text-align:left;padding:6px;color:#64748b;background:#0d1b2a;">Email</th><th style="text-align:left;padding:6px;color:#64748b;background:#0d1b2a;">Logins</th><th style="text-align:left;padding:6px;color:#64748b;background:#0d1b2a;">Status</th><th style="text-align:left;padding:6px;color:#64748b;background:#0d1b2a;">Action</th></tr>';
-      users.sort(function(a,b){return(b.logins||0)-(a.logins||0);});
-      users.forEach(function(u){
-        var statusColor=u.disabled?'#f87171':'#34d399';
-        var statusText=u.disabled?'BLOCKED':'Active';
-        var btnText=u.disabled?'Unblock':'Block';
-        var btnColor=u.disabled?'#059669':'#dc2626';
+      var h='<input class="ap-search" id="apSearch" type="text" placeholder="Search users by name or email..." value="'+esc(searchTerm||'')+'" oninput="adminUsers(this.value,document.getElementById(\'apSort\').value)">';
+      h+='<div class="ap-tbar"><select id="apSort" onchange="adminUsers(document.getElementById(\'apSearch\').value,this.value)">';
+      h+='<option value="logins"'+(sortBy==='logins'?' selected':'')+'>Sort: Most Logins</option>';
+      h+='<option value="last"'+(sortBy==='last'?' selected':'')+'>Sort: Last Active</option>';
+      h+='<option value="created"'+(sortBy==='created'?' selected':'')+'>Sort: Newest First</option>';
+      h+='<option value="name"'+(sortBy==='name'?' selected':'')+'>Sort: Name A-Z</option>';
+      h+='<option value="email"'+(sortBy==='email'?' selected':'')+'>Sort: Email A-Z</option>';
+      h+='</select>';
+      h+='<button onclick="adminExportCSV()">&#128229; Export CSV</button>';
+      h+='<button onclick="_usersCache=null;adminUsers()">&#8635; Refresh</button>';
+      h+='<span class="ap-count">'+filtered.length+' of '+users.length+' users</span></div>';
+
+      filtered.forEach(function(u){
         var isAdmin=ADMIN_EMAILS.indexOf(u.email)!==-1;
-        html+='<tr style="border-top:1px solid #1e293b;"><td style="padding:6px;color:#e2e8f0;background:#0d1b2a;">'+u.email+(isAdmin?' <span style="font-size:8px;background:#d97706;color:#fff;padding:1px 4px;border-radius:3px;">ADMIN</span>':'')+'</td><td style="padding:6px;color:#34d399;background:#0d1b2a;">'+u.logins+'</td><td style="padding:6px;color:'+statusColor+';font-weight:600;background:#0d1b2a;">'+statusText+'</td><td style="padding:6px;background:#0d1b2a;">'+(isAdmin?'<span style="color:#64748b;">-</span>':'<button onclick="toggleUserBlock(\''+u.uid+'\','+(!u.disabled)+')" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid '+btnColor+';background:transparent;color:'+btnColor+';cursor:pointer;font-family:var(--mono);">'+btnText+'</button>')+'</td></tr>';
+        var planBadge=isAdmin?'<span class="ap-bg ap-bg-admin">ADMIN</span>':(u.plan==='pro'?'<span class="ap-bg ap-bg-pro">PRO</span>':'<span class="ap-bg ap-bg-free">FREE</span>');
+        var statusBadge=u.disabled?'<span class="ap-bg ap-bg-blocked">Blocked</span>':'';
+        var avatarSrc=u.photo||generateAvatar(u.email||'?');
+
+        h+='<div class="ap-urow" onclick="adminUserDetail(\''+u.uid+'\')">';
+        h+='<img class="ap-uav" src="'+avatarSrc+'">';
+        h+='<div class="ap-uinfo"><div class="ap-uname">'+esc(u.name)+' '+planBadge+' '+statusBadge+'</div><div class="ap-uemail">'+esc(u.email)+'</div></div>';
+        h+='<div class="ap-umeta"><span title="Logins" style="color:#34d399;font-weight:700;">'+u.logins+'</span><span title="Last login">'+timeAgo(u.lastLogin)+'</span></div>';
+        h+='</div>';
       });
-      html+='</table>';
-      out(html);
+
+      if(!filtered.length)h+='<div style="color:#64748b;text-align:center;padding:20px;">No users match your search.</div>';
+      out(h);
+    };
+
+    if(_usersCache){render(_usersCache);return;}
+    db.collection('users').get().then(function(snap){
+      var users=[];
+      snap.forEach(function(doc){
+        var d=doc.data();
+        users.push({uid:doc.id,email:d.email||'',name:d.displayName||'-',logins:d.loginCount||0,
+          lastLogin:d.lastLogin?d.lastLogin.toDate():null,created:d.createdAt?d.createdAt.toDate():null,
+          plan:d.plan||'free',disabled:d.disabled===true,photo:d.photoURL||null});
+      });
+      _usersCache=users;
+      render(users);
+    }).catch(function(err){out('<div style="color:#f87171;">Failed: '+err.message+'</div>');});
+  };
+
+  // ===== USER DETAIL =====
+  window.adminUserDetail=function(uid){
+    out('<div style="color:#94a3b8;text-align:center;padding:30px;">Loading user details...</div>');
+    db.collection('users').doc(uid).get().then(function(doc){
+      if(!doc.exists){out('<div style="color:#f87171;">User document not found.</div>');return;}
+      var d=doc.data();
+      var isAdmin=ADMIN_EMAILS.indexOf(d.email)!==-1;
+      var isPro=(d.plan==='pro')||isAdmin;
+      var avatarSrc=d.photoURL||generateAvatar(d.email||'?');
+
+      var h='<div style="margin-bottom:10px;"><button onclick="adminUsers()" style="background:none;border:none;color:#22d3ee;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:600;">&#8592; Back to Users</button></div>';
+      h+='<div class="ap-detail">';
+      h+='<div class="ap-dhdr"><img class="ap-dav" src="'+avatarSrc+'"><div><div class="ap-dname">'+esc(d.displayName||d.email.split('@')[0])+'</div><div class="ap-demail">'+esc(d.email)+'</div></div></div>';
+
+      h+='<div class="ap-dgrid">';
+      h+='<div class="ap-ditem"><div class="ap-dl">User ID</div><div class="ap-dv" style="font-size:9px;word-break:break-all;">'+uid+'</div></div>';
+      h+='<div class="ap-ditem"><div class="ap-dl">Plan</div><div class="ap-dv">'+(isAdmin?'<span class="ap-bg ap-bg-admin">ADMIN</span>':(isPro?'<span class="ap-bg ap-bg-pro">PRO</span>':'<span class="ap-bg ap-bg-free">FREE</span>'))+'</div></div>';
+      h+='<div class="ap-ditem"><div class="ap-dl">Total Logins</div><div class="ap-dv" style="color:#34d399;">'+(d.loginCount||0)+'</div></div>';
+      h+='<div class="ap-ditem"><div class="ap-dl">Last Login</div><div class="ap-dv">'+(d.lastLogin?timeAgo(d.lastLogin.toDate()):'Never')+'</div></div>';
+      h+='<div class="ap-ditem"><div class="ap-dl">Account Created</div><div class="ap-dv">'+(d.createdAt?d.createdAt.toDate().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):'Unknown')+'</div></div>';
+      h+='<div class="ap-ditem"><div class="ap-dl">Status</div><div class="ap-dv">'+(d.disabled?'<span style="color:#f87171;">&#128683; Blocked</span>':'<span style="color:#34d399;">&#9679; Active</span>')+'</div></div>';
+      h+='<div class="ap-ditem"><div class="ap-dl">Device</div><div class="ap-dv" style="font-size:9px;">'+esc(d.activeDevice?d.activeDevice.substr(0,60):'Unknown')+'</div></div>';
+      h+='<div class="ap-ditem"><div class="ap-dl">Session Started</div><div class="ap-dv">'+(d.sessionStarted?timeAgo(d.sessionStarted.toDate()):'—')+'</div></div>';
+      h+='</div>';
+
+      if(!isAdmin){
+        h+='<div class="ap-dacts">';
+        if(d.disabled){
+          h+='<button onclick="toggleUserBlock(\''+uid+'\',false)" style="border:1px solid #059669;background:rgba(5,150,105,.1);color:#34d399;">&#9989; Unblock User</button>';
+        }else{
+          h+='<button onclick="toggleUserBlock(\''+uid+'\',true)" style="border:1px solid #dc2626;background:rgba(220,38,38,.1);color:#f87171;">&#128683; Block User</button>';
+        }
+        if(isPro&&!isAdmin){
+          h+='<button onclick="adminTogglePlan(\''+uid+'\',false)" style="border:1px solid #64748b;background:rgba(100,116,139,.1);color:#94a3b8;">Remove Pro</button>';
+        }else if(!isPro){
+          h+='<button onclick="adminTogglePlan(\''+uid+'\',true)" style="border:1px solid #d97706;background:rgba(217,119,6,.1);color:#fbbf24;">&#9733; Grant Pro</button>';
+        }
+        h+='</div>';
+      }
+
+      var history=d.loginHistory||[];
+      h+='<div class="ap-lhist"><h4>&#128337; Login History ('+history.length+' entries)</h4>';
+      if(history.length===0){
+        h+='<div style="color:#64748b;font-size:10px;padding:8px 0;">No login history recorded yet. History appears after next login.</div>';
+      }else{
+        history.slice().reverse().forEach(function(entry){
+          var ed=new Date(entry.time);
+          var mc=entry.method==='google'?'#34d399':'#22d3ee';
+          var mi=entry.method==='google'?'G':'@';
+          h+='<div class="ap-lentry">';
+          h+='<div class="ap-ldot" style="background:'+mc+';"></div>';
+          h+='<span class="ap-ltime">'+ed.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+ed.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})+'</span>';
+          h+='<span class="ap-lmethod" style="color:'+mc+';min-width:50px;">'+mi+' '+esc(entry.method||'—')+'</span>';
+          h+='<span class="ap-ldevice">'+esc((entry.browser||'')+(entry.device?' · '+entry.device:''))+'</span>';
+          h+='</div>';
+        });
+      }
+      h+='</div></div>';
+      out(h);
+    }).catch(function(err){out('<div style="color:#f87171;">Failed to load user: '+err.message+'</div>');});
+  };
+
+  // ===== TOGGLE PLAN =====
+  window.adminTogglePlan=function(uid,makePro){
+    if(!confirm((makePro?'Grant Pro access to':'Remove Pro access from')+' this user?'))return;
+    db.collection('users').doc(uid).update({plan:makePro?'pro':firebase.firestore.FieldValue.delete()}).then(function(){
+      _usersCache=null;
+      adminUserDetail(uid);
     }).catch(function(err){
-      out('<div style="color:#f87171;">Audit failed: '+err.code+' — '+err.message+'</div>');
+      if(err.code==='permission-denied'){
+        alert('Permission denied. Update Firestore rules to allow admin to modify the plan field.\n\nChange: .affectedKeys().hasOnly([\'disabled\'])\nTo: .affectedKeys().hasOnly([\'disabled\',\'plan\'])');
+      }else{
+        alert('Failed: '+err.message);
+      }
     });
   };
 
-  window.viewFeedback=function(){
-    out('<div style="color:#94a3b8;">Loading feedback...</div>');
-    db.collection('feedback').orderBy('timestamp','desc').limit(50).get().then(function(snapshot){
-      if(snapshot.empty){out('<div style="color:#94a3b8;">No feedback yet.</div>');return;}
-      var html='<div style="margin-bottom:10px;font-weight:700;color:#c084fc;">Feedback: '+snapshot.size+' entries</div>';
-      snapshot.forEach(function(doc){
+  // ===== BLOCK/UNBLOCK =====
+  window.toggleUserBlock=function(uid,block){
+    if(!confirm((block?'Block':'Unblock')+' this user?'))return;
+    db.collection('users').doc(uid).update({disabled:block}).then(function(){
+      _usersCache=null;
+      adminUserDetail(uid);
+    }).catch(function(err){
+      alert('Failed: '+err.message);
+    });
+  };
+
+  // ===== EXPORT CSV =====
+  window.adminExportCSV=function(){
+    if(!_usersCache||!_usersCache.length){alert('Load users first.');return;}
+    var csvSafe=function(s){return '"'+String(s||'').replace(/"/g,'""')+'"';};
+    var csv='Name,Email,Plan,Logins,Last Login,Created,Status\n';
+    _usersCache.forEach(function(u){
+      csv+=csvSafe(u.name)+','+csvSafe(u.email)+','+csvSafe(ADMIN_EMAILS.indexOf(u.email)!==-1?'admin':u.plan)+','+u.logins+','+csvSafe(u.lastLogin?u.lastLogin.toLocaleString():'never')+','+csvSafe(u.created?u.created.toLocaleString():'unknown')+','+csvSafe(u.disabled?'blocked':'active')+'\n';
+    });
+    var blob=new Blob([csv],{type:'text/csv'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='users_export_'+new Date().toISOString().split('T')[0]+'.csv';
+    a.click();
+  };
+
+  // ===== FEEDBACK =====
+  window.adminFeedback=function(){
+    db.collection('feedback').orderBy('timestamp','desc').limit(50).get().then(function(snap){
+      if(snap.empty){out('<div style="color:#94a3b8;text-align:center;padding:20px;">No feedback yet.</div>');return;}
+      var unread=0;
+      snap.forEach(function(doc){if(doc.data().status==='new')unread++;});
+      var badge=document.getElementById('apFbBadge');
+      if(badge){if(unread>0){badge.style.display='';badge.textContent=unread;}else{badge.style.display='none';}}
+
+      var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:700;color:#c084fc;">Feedback ('+snap.size+')</span>';
+      if(unread>0)h+='<span style="font-size:10px;color:#fbbf24;">'+unread+' unread</span>';
+      h+='</div>';
+
+      snap.forEach(function(doc){
         var d=doc.data();
         var typeColors={suggestion:'#22d3ee',bug:'#f87171',content:'#fbbf24',appreciation:'#34d399',other:'#94a3b8'};
         var time=d.timestamp?d.timestamp.toDate().toLocaleString():'pending';
-        var statusColor=d.status==='new'?'#fbbf24':d.status==='read'?'#34d399':'#94a3b8';
-        html+='<div style="padding:10px 0;border-bottom:1px solid #1e293b;">';
-        html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(168,85,247,0.15);color:'+(typeColors[d.type]||'#94a3b8')+';">'+((d.type||'other').toUpperCase())+'</span><span style="font-size:9px;color:#64748b;">'+time+'</span></div>';
-        html+='<div style="font-size:12px;color:#e2e8f0;margin-bottom:4px;">'+((d.message||'').replace(/</g,'&lt;'))+'</div>';
-        html+='<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:9px;color:#64748b;">'+(d.userEmail||'anonymous')+(d.currentTopic?' · '+d.currentTopic:'')+'</span>';
-        if(d.status==='new')html+='<button onclick="markFeedbackRead(\''+doc.id+'\')" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #34d399;background:transparent;color:#34d399;cursor:pointer;font-family:var(--mono);">Mark Read</button>';
-        else html+='<span style="font-size:9px;color:'+statusColor+';">'+((d.status||'').toUpperCase())+'</span>';
-        html+='</div></div>';
+        var isNew=d.status==='new';
+        h+='<div style="padding:10px 0;border-bottom:1px solid #1e293b;'+(isNew?'border-left:3px solid #fbbf24;padding-left:10px;':'')+';">';
+        h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(168,85,247,0.15);color:'+(typeColors[d.type]||'#94a3b8')+';">'+((d.type||'other').toUpperCase())+'</span><span style="font-size:9px;color:#64748b;">'+time+'</span></div>';
+        h+='<div style="font-size:12px;color:#e2e8f0;margin-bottom:4px;">'+esc(d.message)+'</div>';
+        h+='<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:9px;color:#64748b;">'+(d.userEmail||'anonymous')+(d.currentTopic?' &middot; '+d.currentTopic:'')+'</span>';
+        if(isNew)h+='<button onclick="markFeedbackRead(\''+doc.id+'\')" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #34d399;background:transparent;color:#34d399;cursor:pointer;font-family:var(--mono);">Mark Read</button>';
+        else h+='<span style="font-size:9px;color:#34d399;">&#10003; READ</span>';
+        h+='</div></div>';
       });
-      out(html);
+      out(h);
     }).catch(function(err){out('<div style="color:#f87171;">Failed: '+err.message+'</div>');});
   };
 
   window.markFeedbackRead=function(docId){
-    db.collection('feedback').doc(docId).update({status:'read'}).then(function(){viewFeedback();});
+    db.collection('feedback').doc(docId).update({status:'read'}).then(function(){adminFeedback();});
   };
 
-  window.toggleUserBlock=function(uid,block){
-    if(!confirm((block?'Block':'Unblock')+' this user?'))return;
-    db.collection('users').doc(uid).update({disabled:block}).then(function(){
-      runUserAudit();
-    }).catch(function(err){
-      out('<div style="color:#f87171;">Failed: '+err.message+'</div>');
-    });
+  // ===== HEALTH CHECK =====
+  window.adminHealth=function(){
+    out('<div style="color:#94a3b8;margin-bottom:8px;">Running checks...</div>');
+    function row(icon,label,detail,ok){return '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #1e293b;"><span style="flex-shrink:0;">'+icon+'</span><div><div style="font-weight:600;color:'+(ok?'#34d399':'#f87171')+';">'+label+'</div><div style="color:#94a3b8;font-size:11px;margin-top:2px;word-break:break-all;">'+detail+'</div></div></div>';}
+    var rows='';
+    try{firebase.app();rows+=row('&#9989;','Firebase App','Project: '+firebaseConfig.projectId,true);}
+    catch(e){rows+=row('&#10060;','Firebase App',e.message,false);}
+    var user=auth.currentUser;
+    if(user){rows+=row('&#9989;','Authentication','Signed in: '+user.email+'<br>UID: '+user.uid,true);}
+    else{rows+=row('&#9888;&#65039;','Authentication','Not signed in',false);}
+    if(analytics&&firebaseConfig.measurementId&&firebaseConfig.measurementId!=='G-PLACEHOLDER'){
+      rows+=row('&#9989;','Analytics','Measurement ID: '+firebaseConfig.measurementId,true);
+    }else{rows+=row('&#10060;','Analytics','measurementId missing or invalid',false);}
+    if(user){
+      var ref=db.collection('users').doc(user.uid);
+      ref.get().then(function(doc){
+        if(doc.exists){var d=doc.data();rows+=row('&#9989;','Firestore Read','loginCount: '+(d.loginCount||0)+', lastLogin: '+(d.lastLogin?d.lastLogin.toDate().toLocaleString():'not set'),true);}
+        else{rows+=row('&#10060;','Firestore Read','User doc MISSING',false);}
+        return ref.set({_healthCheck:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      }).then(function(){
+        rows+=row('&#9989;','Firestore Write','Write test passed',true);
+        return ref.update({_healthCheck:firebase.firestore.FieldValue.delete()});
+      }).catch(function(err){
+        rows+=row('&#10060;','Firestore Write',err.code+': '+err.message,false);
+      }).then(function(){out(rows);});
+    }else{out(rows);}
   };
 
-  setTimeout(runHealthCheck,500);
+  window.runHealthCheck=window.adminHealth;
+  window.runUserAudit=window.adminUsers;
+  window.viewFeedback=window.adminFeedback;
+
+  setTimeout(function(){adminTab('dashboard');},500);
 }
 
 // ========== PWA: Service Worker + Install Prompt ==========
